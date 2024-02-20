@@ -39,7 +39,7 @@ export GITHUB_TOKEN=ghp_mygithubpat
 export PORT=9888
 ```
 
-and run the executable file `copilot-exporter` or `go run ./cmd/copilot-exporter/main.go`
+and run the executable file `copilot-metrics-exporter` or `go run ./cmd/copilot-exporter/main.go`
 
 ### Metrics
 Available metrics are:
