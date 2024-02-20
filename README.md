@@ -50,3 +50,6 @@ Available metrics are:
 - github_copilot_total_seats_occupied 
 - github_copilot_total_suggestions_count
 - github_copilot_suggestions_count_breakdown (labels: language, editor)
+- github_copilot_lines_suggested_breakdown (labels: language, editor)
+- github_copilot_lines_accepted_breakdown (labels: language, editor)
+- github_copilot_acceptances_count_breakdown (labels: language, editor)
