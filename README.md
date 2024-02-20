@@ -40,3 +40,13 @@ export PORT=9888
 ```
 
 and run the executable file `copilot-exporter` or `go run ./cmd/copilot-exporter/main.go`
+
+### Metrics
+Available metrics are:
+- github_copilot_total_acceptances_count 
+- github_copilot_total_active_users 
+- github_copilot_total_lines_accepted 
+- github_copilot_total_lines_suggested 
+- github_copilot_total_seats_occupied 
+- github_copilot_total_suggestions_count
+- github_copilot_suggestions_count_breakdown (labels: language, editor)
