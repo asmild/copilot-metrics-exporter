@@ -22,3 +22,4 @@ go.work
 .idea
 config.yaml
 config.yml
+copilot-metrics-exporter

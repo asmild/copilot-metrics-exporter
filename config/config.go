@@ -19,9 +19,26 @@ var defaultConfigPaths = []string{
 	"~/.copilot-exporter/config.yml",
 }
 
-var defaultPort = 9080
+var defaultPort = "9080"
 
 func GetConfig(configPath string) (*ExporterConfig, error) {
+
+	org := os.Getenv("GITHUB_ORG")
+	token := os.Getenv("GITHUB_TOKEN")
+	port := os.Getenv("PORT")
+
+	if org != "" && token != "" {
+		if port == "" {
+			port = defaultPort
+		}
+
+		return &ExporterConfig{
+			Organization:        org,
+			PersonalAccessToken: token,
+			Port:                port,
+		}, nil
+	}
+
 	if configPath == "" {
 		for _, p := range defaultConfigPaths {
 			if _, err := os.Stat(p); err == nil {
@@ -49,7 +66,7 @@ func GetConfig(configPath string) (*ExporterConfig, error) {
 	}
 
 	if config.Port == "" {
-		config.Port = fmt.Sprintf("%d", defaultPort)
+		config.Port = defaultPort
 	}
 
 	return &config, nil

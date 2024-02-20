@@ -32,3 +32,11 @@ pat: ghp_mygithubpat
 # example
 port: 9888
 ```
+or set the environment variables `GITHUB_ORG` `GITHUB_TOKEN` and `PORT`
+```bash
+export GITHUB_ORG=myorgname
+export GITHUB_TOKEN=ghp_mygithubpat
+export PORT=9888
+```
+
+and run the executable file `copilot-exporter` or `go run ./cmd/copilot-exporter/main.go`
