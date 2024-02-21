@@ -17,8 +17,12 @@ type CopilotMetricsCollector struct {
 	totalLinesAccepted    *prometheus.Desc
 	totalActiveUsers      *prometheus.Desc
 	totalSeatsOccupied    *prometheus.Desc
-
-	githubClient *github.GitHubClient
+	linesAcceptedDesc     *prometheus.Desc
+	linesSuggestedDesc    *prometheus.Desc
+	suggestionsCountDesc  *prometheus.Desc
+	acceptancesCountDesc  *prometheus.Desc
+	activeUsers           *prometheus.Desc
+	githubClient          *github.GitHubClient
 }
 
 func NewCopilotMetricsCollector(githubClient *github.GitHubClient) *CopilotMetricsCollector {
@@ -47,6 +51,38 @@ func NewCopilotMetricsCollector(githubClient *github.GitHubClient) *CopilotMetri
 			"Total number of active users utilizing GitHub Copilot last day.",
 			nil, nil,
 		),
+		linesAcceptedDesc: prometheus.NewDesc("github_copilot_lines_accepted_breakdown",
+			"Lines accepted breakdown for GitHub Copilot by language and editor.",
+			[]string{"language", "editor"}, nil,
+		),
+
+		linesSuggestedDesc: prometheus.NewDesc(
+			"github_copilot_lines_suggested_breakdown",
+			fmt.Sprintf("Lines suggested breakdown for GitHub Copilot by language and editor."),
+			[]string{"language", "editor"},
+			nil,
+		),
+
+		suggestionsCountDesc: prometheus.NewDesc(
+			"github_copilot_suggestions_count_breakdown",
+			fmt.Sprintf("Suggestions count breakdown for GitHub Copilot by language and editor."),
+			[]string{"language", "editor"},
+			nil,
+		),
+
+		acceptancesCountDesc: prometheus.NewDesc(
+			"github_copilot_acceptances_count_breakdown",
+			fmt.Sprintf("Acceptanse count breakdown for GitHub Copilot by language and editor."),
+			[]string{"language", "editor"},
+			nil,
+		),
+
+		activeUsers: prometheus.NewDesc(
+			"github_copilot_active_users_breakdown",
+			fmt.Sprintf("Active users breakdown for GitHub Copilot by language and editor."),
+			[]string{"language", "editor"},
+			nil,
+		),
 		githubClient: githubClient,
 	}
 }
@@ -58,6 +94,11 @@ func (collector *CopilotMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.totalLinesAccepted
 	ch <- collector.totalActiveUsers
 	ch <- collector.totalSeatsOccupied
+	ch <- collector.linesAcceptedDesc
+	ch <- collector.linesSuggestedDesc
+	ch <- collector.suggestionsCountDesc
+	ch <- collector.acceptancesCountDesc
+	ch <- collector.activeUsers
 }
 
 func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
@@ -74,57 +115,41 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	lastDayCopilotUsage := helper.GetLastDayData(copilotUsage)
-	totalSeatsOccupied := float64(billing.SeatBreakdown.Total)
-	totalSuggestionsCount := helper.GetTotalSuggestionsCount(lastDayCopilotUsage)
-	totalAcceptancesCount := helper.GetTotalAcceptancesCount(lastDayCopilotUsage)
-	totalLinesSuggested := helper.GetTotalLinesSuggested(lastDayCopilotUsage)
-	totalLinesAccepted := helper.GetTotalLinesAccepted(lastDayCopilotUsage)
-	totalActiveUsers := helper.GetTotalActiveUsers(lastDayCopilotUsage)
+	ch <- prometheus.MustNewConstMetric(collector.totalSuggestionsCount, prometheus.GaugeValue, helper.GetTotalSuggestionsCount(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalAcceptancesCount, prometheus.GaugeValue, helper.GetTotalAcceptancesCount(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, helper.GetTotalLinesSuggested(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, helper.GetTotalLinesAccepted(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, helper.GetTotalActiveUsers(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(billing.SeatBreakdown.Total))
 
-	ch <- prometheus.MustNewConstMetric(collector.totalSuggestionsCount, prometheus.GaugeValue, totalSuggestionsCount)
-	ch <- prometheus.MustNewConstMetric(collector.totalAcceptancesCount, prometheus.GaugeValue, totalAcceptancesCount)
-	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, totalLinesSuggested)
-	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, totalLinesAccepted)
-	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, totalActiveUsers)
-	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, totalSeatsOccupied)
+	metricsSum := make(map[string]map[string]map[string]float64)
 
 	for _, usage := range lastDayCopilotUsage.Breakdown {
 		language := usage.Language
 		editor := usage.Editor
-		linesAccepted := float64(usage.LinesAccepted)
-		linesSuggested := float64(usage.LinesSuggested)
 
-		linesAcceptedDesc := prometheus.NewDesc(
-			"github_copilot_lines_accepted_breakdown",
-			fmt.Sprintf("Usage breakdown for GitHub Copilot by language and editor."),
-			[]string{"language", "editor"},
-			nil,
-		)
+		if _, ok := metricsSum[editor]; !ok {
+			metricsSum[editor] = make(map[string]map[string]float64)
+		}
 
-		linesSuggestedDesc := prometheus.NewDesc(
-			"github_copilot_lines_suggested_breakdown",
-			fmt.Sprintf("Usage breakdown for GitHub Copilot by language and editor."),
-			[]string{"language", "editor"},
-			nil,
-		)
+		if _, ok := metricsSum[editor][language]; !ok {
+			metricsSum[editor][language] = make(map[string]float64)
+		}
 
-		suggestionsCountDesc := prometheus.NewDesc(
-			"github_copilot_suggestions_count_breakdown",
-			fmt.Sprintf("Usage breakdown for GitHub Copilot by language and editor."),
-			[]string{"language", "editor"},
-			nil,
-		)
-
-		acceptancesCountDesc := prometheus.NewDesc(
-			"github_copilot_acceptances_count_breakdown",
-			fmt.Sprintf("Usage breakdown for GitHub Copilot by language and editor."),
-			[]string{"language", "editor"},
-			nil,
-		)
-		ch <- prometheus.MustNewConstMetric(linesAcceptedDesc, prometheus.GaugeValue, linesAccepted, language, editor)
-		ch <- prometheus.MustNewConstMetric(linesSuggestedDesc, prometheus.GaugeValue, linesSuggested, language, editor)
-		ch <- prometheus.MustNewConstMetric(suggestionsCountDesc, prometheus.GaugeValue, float64(usage.SuggestionsCount), language, editor)
-		ch <- prometheus.MustNewConstMetric(acceptancesCountDesc, prometheus.GaugeValue, float64(usage.AcceptancesCount), language, editor)
+		metricsSum[editor][language]["linesAccepted"] += float64(usage.LinesAccepted)
+		metricsSum[editor][language]["linesSuggested"] += float64(usage.LinesSuggested)
+		metricsSum[editor][language]["suggestionsCount"] += float64(usage.SuggestionsCount)
+		metricsSum[editor][language]["acceptancesCount"] += float64(usage.AcceptancesCount)
+		metricsSum[editor][language]["activeUsers"] += float64(usage.ActiveUsers)
+	}
+	for editor, languages := range metricsSum {
+		for language, metrics := range languages {
+			ch <- prometheus.MustNewConstMetric(collector.linesAcceptedDesc, prometheus.GaugeValue, metrics["linesAccepted"], language, editor)
+			ch <- prometheus.MustNewConstMetric(collector.linesSuggestedDesc, prometheus.GaugeValue, metrics["linesSuggested"], language, editor)
+			ch <- prometheus.MustNewConstMetric(collector.suggestionsCountDesc, prometheus.GaugeValue, metrics["suggestionsCount"], language, editor)
+			ch <- prometheus.MustNewConstMetric(collector.acceptancesCountDesc, prometheus.GaugeValue, metrics["acceptancesCount"], language, editor)
+			ch <- prometheus.MustNewConstMetric(collector.activeUsers, prometheus.GaugeValue, metrics["activeUsers"], language, editor)
+		}
 	}
 }
 
