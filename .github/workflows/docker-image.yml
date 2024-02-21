@@ -25,13 +25,21 @@ jobs:
     - name: Print env
       run: |
         echo ${{ github.event.inputs.custom_version_number }}
-        echo ${{ steps.meta.outputs.tags }}
-        echo ${{ steps.meta.outputs.labels }}
 
-#    - name: Build and push Docker image
-#      uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-#      with:
-#        context: .
-#        push: true
-#        tags: ${{ steps.meta.outputs.tags }}
-#        labels: ${{ steps.meta.outputs.labels }}
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+      with:
+        images: "asmild/${{ github.event.repository.name }}"
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+      with:
+        context: .
+        push: false
+        tags: ${{ github.event.inputs.custom_version_number }}
+        labels: ${{ github.event.inputs.custom_version_number }}
+
+    - name: Lookup image
+      run: |
+        docker images
