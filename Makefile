@@ -20,3 +20,8 @@ clean:
 image:
 	@echo "Building Docker image..."
 	@docker build -t asmild/copilot-metrics-exporter:$(TAG) .
+
+.PHONY: push
+push:
+	@echo "Pushing Docker image..."
+	@docker push asmild/copilot-metrics-exporter:$(TAG)
