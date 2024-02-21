@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: 'asmild/${{ github.repository }}'
+  IMAGE_NAME: '${{ github.repository }}'
 
 jobs:
   build:
