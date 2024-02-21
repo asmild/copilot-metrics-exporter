@@ -37,8 +37,8 @@ jobs:
       with:
         context: .
         push: false
-        tags: ${{ github.event.inputs.custom_version_number }}
-        labels: ${{ github.event.inputs.custom_version_number }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
 
     - name: Lookup image
       run: |
