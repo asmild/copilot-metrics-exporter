@@ -3,6 +3,10 @@ name: Release
 on:
   release:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: 'asmild/${{ github.repository }}'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,21 +16,23 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          registry: 'ghcr.io'
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print env
-        run: |
-          echo ${{ github.event.inputs.custom_version_number }}
-          echo ${{ steps.meta.outputs.tags }}
-          echo ${{ steps.meta.outputs.labels }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: "asmild/${{ github.event.repository.name }}"
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Print env
+        run: |
+          echo ${{ steps.meta.outputs.tags }}
+          echo ${{ steps.meta.outputs.labels }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
