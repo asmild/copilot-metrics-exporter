@@ -14,5 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: make build TAG=${{ github.event.inputs.custom_version_number }}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+        registry: 'ghcr.io'
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Print env
+      run: |
+        echo ${{ github.event.inputs.custom_version_number }}
+        echo ${{ steps.meta.outputs.tags }}
+        echo ${{ steps.meta.outputs.labels }}
+
+#    - name: Build and push Docker image
+#      uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+#      with:
+#        context: .
+#        push: true
+#        tags: ${{ steps.meta.outputs.tags }}
+#        labels: ${{ steps.meta.outputs.labels }}
