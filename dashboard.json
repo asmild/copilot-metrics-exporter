@@ -1,0 +1,950 @@
+{
+  "__inputs": [],
+  "__elements": [],
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.5.14"
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "iteration": 1708936773128,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "panels": [],
+      "title": "Users stats",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "Number of seats that occupied",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_seats_occupied",
+          "refId": "A"
+        }
+      ],
+      "title": "Github Copilot seats",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_active_users",
+          "refId": "A"
+        }
+      ],
+      "title": "Github Copilot Active Users",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Copilot Total stats",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "Total number of suggestions made by GitHub Copilot last day.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_suggestions_count",
+          "refId": "A"
+        }
+      ],
+      "title": "Github Copilot suggestions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "Total number of suggestions accepted by users last day.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_acceptances_count",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of acceptance by users",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "Total number of lines suggested by GitHub Copilot last day.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_lines_suggested",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of seggested lines",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "description": "Total number of lines accepted by users last day.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.5.14",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "expr": "github_copilot_total_lines_accepted",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of lines accepted by users",
+      "type": "stat"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 28,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 8,
+            "x": 0,
+            "y": 16
+          },
+          "id": 30,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "values": [
+                "percent"
+              ]
+            },
+            "pieType": "donut",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "sum by (language) (github_copilot_active_users_breakdown)",
+              "legendFormat": "{{language}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Active users per language",
+          "type": "piechart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 10,
+            "x": 8,
+            "y": 16
+          },
+          "id": 32,
+          "options": {
+            "displayMode": "lcd",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "8.5.14",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "sum by (language) (github_copilot_acceptances_count_breakdown/github_copilot_suggestions_count_breakdown)",
+              "legendFormat": "{{language}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Acceptance rate per language",
+          "type": "bargauge"
+        }
+      ],
+      "title": "Language usage stats",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 18,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 4,
+            "x": 0,
+            "y": 4
+          },
+          "id": 20,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "values": [
+                "value"
+              ]
+            },
+            "pieType": "donut",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.5.14",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "github_copilot_suggestions_count_breakdown{language=\"${language}\"}",
+              "instant": false,
+              "legendFormat": "{{editor}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Copilot suggestion for ${language}",
+          "type": "piechart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 4,
+            "x": 4,
+            "y": 4
+          },
+          "id": 22,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "values": [
+                "value"
+              ]
+            },
+            "pieType": "donut",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "github_copilot_acceptances_count_breakdown{language=\"${language}\"}",
+              "legendFormat": "{{editor}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Accepted ${language} suggestions by users",
+          "type": "piechart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 4,
+            "x": 8,
+            "y": 4
+          },
+          "id": 24,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "values": [
+                "value"
+              ]
+            },
+            "pieType": "donut",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "github_copilot_active_users_breakdown{language=\"${language}\"}",
+              "legendFormat": "{{editor}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Active users of ${language}",
+          "type": "piechart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": null
+          },
+          "description": "Rate of accepted lines for ${language}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 4,
+            "x": 12,
+            "y": 4
+          },
+          "id": 26,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "values": [
+                "value"
+              ]
+            },
+            "pieType": "donut",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "sum(github_copilot_lines_suggested_breakdown{language=\"${language}\"})",
+              "legendFormat": "suggested",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": null
+              },
+              "editorMode": "code",
+              "expr": "sum(github_copilot_lines_accepted_breakdown{language=\"${language}\"})",
+              "hide": false,
+              "legendFormat": "accepted",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Acceptance rate for ${language}",
+          "type": "piechart"
+        }
+      ],
+      "repeat": "language",
+      "title": "${language} language stats",
+      "type": "row"
+    }
+  ],
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "definition": "label_values(github_copilot_suggestions_count_breakdown, language)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Language",
+        "multi": true,
+        "name": "language",
+        "options": [],
+        "query": {
+          "query": "label_values(github_copilot_suggestions_count_breakdown, language)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "definition": "label_values(github_copilot_suggestions_count_breakdown, editor)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Editor",
+        "multi": false,
+        "name": "editor",
+        "options": [],
+        "query": {
+          "query": "label_values(github_copilot_suggestions_count_breakdown, editor)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Github Copilot Stats",
+  "uid": "CDopRYoIk",
+  "version": 9,
+  "weekStart": ""
+}
