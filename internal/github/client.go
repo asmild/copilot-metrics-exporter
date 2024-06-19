@@ -17,12 +17,15 @@ type GitHubClient struct {
 
 func NewGitHubClient(conf config.ExporterConfig) (*GitHubClient, error) {
 	client := &http.Client{}
-
+	endpoint := "orgs"
+	if conf.IsEnterprise {
+		endpoint = "enterprises"
+	}
 	return &GitHubClient{
 		token:        conf.PersonalAccessToken,
 		Organization: conf.Organization,
 		client:       client,
-		baseApiUrl:   fmt.Sprintf("https://api.github.com/orgs/%s", conf.Organization),
+		baseApiUrl:   fmt.Sprintf("https://api.github.com/%s/%s", endpoint, conf.Organization),
 	}, nil
 }
 
@@ -32,9 +35,8 @@ func (c *GitHubClient) makeRequest(method, endpoint string, data interface{}) (*
 		"Authorization":        "Bearer " + c.token,
 		"X-GitHub-Api-Version": "2022-11-28",
 	}
-
-	res, err := requests.HttpRequester(c.client, fmt.Sprintf("%s/%s", c.baseApiUrl, endpoint), headers, method, data)
-
+	url := fmt.Sprintf("%s/%s", c.baseApiUrl, endpoint)
+	res, err := requests.HttpRequester(c.client, url, headers, method, data)
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		var errorMessage struct {
 			Message          string `json:"message"`
@@ -44,7 +46,7 @@ func (c *GitHubClient) makeRequest(method, endpoint string, data interface{}) (*
 		if err != nil {
 			return nil, fmt.Errorf("HTTP request failed with status %d: %s", res.StatusCode, res.Status)
 		}
-		return nil, fmt.Errorf("HTTP request failed with status %d: %s (%s)", res.StatusCode, errorMessage.Message, errorMessage.DocumentationURL)
+		return nil, fmt.Errorf("HTTP request to %s failed with status %d: %s (%s)", url, res.StatusCode, errorMessage.Message, errorMessage.DocumentationURL)
 	}
 
 	return res, nil

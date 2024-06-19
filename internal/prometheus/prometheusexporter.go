@@ -108,7 +108,7 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	billing, err := collector.githubClient.GetBilling()
+	billing, err := collector.githubClient.GetBillingSeats()
 	if err != nil {
 		fmt.Printf("Failed to get Copilot billing: %v\n", err)
 		return
@@ -120,10 +120,9 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, helper.GetTotalLinesSuggested(lastDayCopilotUsage))
 	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, helper.GetTotalLinesAccepted(lastDayCopilotUsage))
 	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, helper.GetTotalActiveUsers(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(billing.SeatBreakdown.Total))
+	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(billing.TotalSeats))
 
 	metricsSum := make(map[string]map[string]map[string]float64)
-
 	for _, usage := range lastDayCopilotUsage.Breakdown {
 		language := usage.Language
 		editor := usage.Editor
@@ -144,6 +143,7 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 	for editor, languages := range metricsSum {
 		for language, metrics := range languages {
+
 			ch <- prometheus.MustNewConstMetric(collector.linesAcceptedDesc, prometheus.GaugeValue, metrics["linesAccepted"], language, editor)
 			ch <- prometheus.MustNewConstMetric(collector.linesSuggestedDesc, prometheus.GaugeValue, metrics["linesSuggested"], language, editor)
 			ch <- prometheus.MustNewConstMetric(collector.suggestionsCountDesc, prometheus.GaugeValue, metrics["suggestionsCount"], language, editor)
@@ -175,6 +175,11 @@ func initMetrics(conf *config.ExporterConfig) {
 
 func StartExporter(conf *config.ExporterConfig) {
 	fmt.Println("Starting exporter on port", conf.Port)
+	if conf.IsEnterprise {
+		fmt.Println("Enterprise:", conf.Organization)
+	} else {
+		fmt.Println("Organization:", conf.Organization)
+	}
 	initMetrics(conf)
 	http.Handle("/metrics", promhttp.Handler())
 	err := http.ListenAndServe(":"+conf.Port, nil)
