@@ -32,7 +32,13 @@ pat: ghp_mygithubpat
 # example
 port: 9888
 ```
-or set the environment variables `GITHUB_ORG` `GITHUB_TOKEN` and `PORT`
+- If your Github organisation is an enterprise, set the `is_enterprise` flag to `yes`. By default, it is `no`
+```yaml 
+# example
+is_enterprise: yes
+```
+
+or set the environment variables `GITHUB_ORG` `GITHUB_TOKEN` `GITHUB_IS_ENTERPRISE` and `PORT`
 ```bash
 export GITHUB_ORG=myorgname
 export GITHUB_TOKEN=ghp_mygithubpat
