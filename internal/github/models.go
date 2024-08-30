@@ -7,6 +7,9 @@ type CopilotUsage struct {
 	TotalLinesSuggested   int             `json:"total_lines_suggested"`
 	TotalLinesAccepted    int             `json:"total_lines_accepted"`
 	TotalActiveUsers      int             `json:"total_active_users"`
+	TotalChatAcceptance   int             `json:"total_chat_acceptances"`
+	TotalChatTurns        int             `json:"total_chat_turns"`
+	TotalActiveChatUsers  int             `json:"total_active_chat_users"`
 	Breakdown             []LangBreakdown `json:"breakdown"`
 }
 
