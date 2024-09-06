@@ -44,3 +44,15 @@ func GetTotalLinesAccepted(usage github.CopilotUsage) float64 {
 func GetTotalActiveUsers(usage github.CopilotUsage) float64 {
 	return float64(usage.TotalActiveUsers)
 }
+
+func getTotalChatAcceptances(usage github.CopilotUsage) float64 {
+    return float64(usage.TotalChatAcceptance)
+}
+
+func getTotalChatTurns(usage github.CopilotUsage) float64 {
+    return float64(usage.TotalChatTurns)
+}
+
+func getTotalActiveChatUsers(usage github.CopilotUsage) float64 {
+    return float64(usage.TotalActiveChatUsers)
+}
