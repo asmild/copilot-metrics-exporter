@@ -59,3 +59,5 @@ Available metrics are:
 - github_copilot_lines_suggested_breakdown (labels: language, editor)
 - github_copilot_lines_accepted_breakdown (labels: language, editor)
 - github_copilot_acceptances_count_breakdown (labels: language, editor)
+- github_copilot_total_chat_acceptances
+- github_copilot_total_chat_turns
