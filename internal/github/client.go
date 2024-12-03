@@ -10,6 +10,7 @@ import (
 
 type GitHubClient struct {
 	token        string
+	appToken     string
 	Organization string
 	client       *http.Client
 	baseApiUrl   string
@@ -32,9 +33,15 @@ func NewGitHubClient(conf config.ExporterConfig) (*GitHubClient, error) {
 func (c *GitHubClient) makeRequest(method, endpoint string, data interface{}) (*http.Response, error) {
 	headers := map[string]string{
 		"Accept":               "application/vnd.github+json",
-		"Authorization":        "Bearer " + c.token,
 		"X-GitHub-Api-Version": "2022-11-28",
 	}
+
+	if c.token != "" {
+		headers["Authorization"] = "Bearer " + c.token
+	} else if c.appToken != "" {
+		headers["Authorization"] = "Bearer " + c.appToken
+	}
+
 	url := fmt.Sprintf("%s/%s", c.baseApiUrl, endpoint)
 	res, err := requests.HttpRequester(c.client, url, headers, method, data)
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
