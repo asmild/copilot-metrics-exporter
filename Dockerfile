@@ -12,10 +12,13 @@ RUN echo "Building ${BIN}..." && \
     go test -v ./... && \
     go build -o ${BIN} ${SRC}/main.go
 
-FROM alpine:3.21.1 AS final
+FROM alpine:3.21.1 AS runtime
 ENV TZ=UTC
 
+RUN addgroup -S exporter && adduser -S exporter -G exporter
+USER exporter
 COPY --from=builder /app/copilot-metrics-exporter /copilot-metrics-exporter
 
+USER nonroot
 CMD ["/copilot-metrics-exporter"]
 
