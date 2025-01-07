@@ -9,6 +9,7 @@ import (
 type ExporterConfig struct {
 	Organization        string `yaml:"org"`
 	PersonalAccessToken string `yaml:"pat"`
+	GitHubAppToken      string `yaml:"app_token"`
 	Port                string `yaml:"port"`
 	IsEnterprise        bool   `yaml:"is_enterprise"`
 }
@@ -27,9 +28,10 @@ func GetConfig(configPath string) (*ExporterConfig, error) {
 	org := os.Getenv("GITHUB_ORG")
 	isEnterprise := os.Getenv("GITHUB_IS_ENTERPRISE")
 	token := os.Getenv("GITHUB_TOKEN")
+	appToken := os.Getenv("GITHUB_APP_TOKEN")
 	port := os.Getenv("PORT")
 
-	if org != "" && token != "" {
+	if org != "" && (token != "" || appToken != "") {
 		if port == "" {
 			port = defaultPort
 		}
@@ -37,6 +39,7 @@ func GetConfig(configPath string) (*ExporterConfig, error) {
 		return &ExporterConfig{
 			Organization:        org,
 			PersonalAccessToken: token,
+			GitHubAppToken:      appToken,
 			Port:                port,
 			IsEnterprise:        isEnterprise == "true",
 		}, nil

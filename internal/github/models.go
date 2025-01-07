@@ -7,6 +7,9 @@ type CopilotUsage struct {
 	TotalLinesSuggested   int             `json:"total_lines_suggested"`
 	TotalLinesAccepted    int             `json:"total_lines_accepted"`
 	TotalActiveUsers      int             `json:"total_active_users"`
+	TotalChatAcceptance   int             `json:"total_chat_acceptances"`
+	TotalChatTurns        int             `json:"total_chat_turns"`
+	TotalActiveChatUsers  int             `json:"total_active_chat_users"`
 	Breakdown             []LangBreakdown `json:"breakdown"`
 }
 
@@ -67,20 +70,24 @@ type CopilotAssignee struct {
 }
 
 type CopilotAssigneeTeam struct {
-	Id                   int    `json:"id,omitempty"`
-	NodeId               string `json:"node_id,omitempty"`
-	URL                  string `json:"url,omitempty"`
-	HtmlURL              string `json:"html_url,omitempty"`
-	Name                 string `json:"name,omitempty"`
-	Slug                 string `json:"slug,omitempty"`
-	Description          string `json:"description,omitempty"`
-	Privacy              string `json:"privacy,omitempty"`
-	NotificationSettings string `json:"notification_setting,omitempty"`
-	Permission           string `json:"permission,omitempty"`
-	Email                string `json:"email,omitempty"`
-	MembersURL           string `json:"members_url,omitempty"`
-	RepositoriesURL      string `json:"repositories_url,omitempty"`
-	Parent               string `json:"parent,omitempty"`
+	Id                   int        `json:"id,omitempty"`
+	NodeId               string     `json:"node_id,omitempty"`
+	URL                  string     `json:"url,omitempty"`
+	HtmlURL              string     `json:"html_url,omitempty"`
+	Name                 string     `json:"name,omitempty"`
+	Slug                 string     `json:"slug,omitempty"`
+	Description          string     `json:"description,omitempty"`
+	Privacy              string     `json:"privacy,omitempty"`
+	NotificationSettings string     `json:"notification_setting,omitempty"`
+	Permission           string     `json:"permission,omitempty"`
+	Email                string     `json:"email,omitempty"`
+	MembersURL           string     `json:"members_url,omitempty"`
+	RepositoriesURL      string     `json:"repositories_url,omitempty"`
+	Parent               ParentType `json:"parent,omitempty"`
+}
+type ParentType struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type CopilotBillingSeats struct {

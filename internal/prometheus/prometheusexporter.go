@@ -16,6 +16,9 @@ type CopilotMetricsCollector struct {
 	totalLinesSuggested   *prometheus.Desc
 	totalLinesAccepted    *prometheus.Desc
 	totalActiveUsers      *prometheus.Desc
+	totalChatAcceptances  *prometheus.Desc
+	totalChatTurns        *prometheus.Desc
+	totalActiveChatUsers  *prometheus.Desc
 	totalSeatsOccupied    *prometheus.Desc
 	linesAcceptedDesc     *prometheus.Desc
 	linesSuggestedDesc    *prometheus.Desc
@@ -51,6 +54,18 @@ func NewCopilotMetricsCollector(githubClient *github.GitHubClient) *CopilotMetri
 			"Total number of active users utilizing GitHub Copilot last day.",
 			nil, nil,
 		),
+        totalChatAcceptances: prometheus.NewDesc("github_copilot_total_chat_acceptances",
+            "Total number of chat acceptances made by GitHub Copilot last day.",
+            nil, nil,
+        ),
+        totalChatTurns: prometheus.NewDesc("github_copilot_total_chat_turns",
+            "Total number of chat turns made by GitHub Copilot last day.",
+            nil, nil,
+        ),
+        totalActiveChatUsers: prometheus.NewDesc("github_copilot_total_active_chat_users",
+            "Total number of active chat users utilizing GitHub Copilot last day.",
+            nil, nil,
+        ),
 		linesAcceptedDesc: prometheus.NewDesc("github_copilot_lines_accepted_breakdown",
 			"Lines accepted breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"}, nil,
@@ -93,6 +108,9 @@ func (collector *CopilotMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.totalLinesSuggested
 	ch <- collector.totalLinesAccepted
 	ch <- collector.totalActiveUsers
+	ch <- collector.totalChatAcceptances
+	ch <- collector.totalChatTurns
+	ch <- collector.totalActiveChatUsers
 	ch <- collector.totalSeatsOccupied
 	ch <- collector.linesAcceptedDesc
 	ch <- collector.linesSuggestedDesc
@@ -120,6 +138,9 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, helper.GetTotalLinesSuggested(lastDayCopilotUsage))
 	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, helper.GetTotalLinesAccepted(lastDayCopilotUsage))
 	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, helper.GetTotalActiveUsers(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalChatAcceptances, prometheus.GaugeValue, helper.GetTotalChatAcceptances(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalChatTurns, prometheus.GaugeValue, helper.GetTotalChatTurns(lastDayCopilotUsage))
+	ch <- prometheus.MustNewConstMetric(collector.totalActiveChatUsers, prometheus.GaugeValue, helper.GetTotalActiveChatUsers(lastDayCopilotUsage))
 	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(billing.TotalSeats))
 
 	metricsSum := make(map[string]map[string]map[string]float64)
