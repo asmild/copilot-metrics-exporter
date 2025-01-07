@@ -2,6 +2,11 @@ BIN := copilot-metrics-exporter
 SRC := ./cmd/copilot-exporter
 TAG := latest
 
+.PHONY: test
+test:
+	@echo "Running tests..."
+	@go test -v ./...
+
 .PHONY: run
 run: build
 	./$(BIN)
