@@ -1,6 +1,6 @@
 module github.com/asmild/copilot-metrics-exporter
 
-go 1.21.3
+go 1.23.4
 
 require (
 	github.com/jarcoal/httpmock v1.3.1
