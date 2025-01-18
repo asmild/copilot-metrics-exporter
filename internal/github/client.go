@@ -3,7 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/asmild/copilot-metrics-exporter/config"
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/requests"
 	"net/http"
 )
@@ -16,7 +16,7 @@ type GitHubClient struct {
 	baseApiUrl   string
 }
 
-func NewGitHubClient(conf config.ExporterConfig) (*GitHubClient, error) {
+func NewGitHubClient(conf config.Config) (*GitHubClient, error) {
 	client := &http.Client{}
 	endpoint := "orgs"
 	if conf.IsEnterprise {

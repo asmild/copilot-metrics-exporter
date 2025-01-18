@@ -1,12 +1,12 @@
 package github
 
 import (
-	"github.com/asmild/copilot-metrics-exporter/config"
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"testing"
 )
 
 func TestNewGitHubClient(t *testing.T) {
-	conf := config.ExporterConfig{
+	conf := config.Config{
 		PersonalAccessToken: "test-token",
 		Organization:        "test-org",
 		IsEnterprise:        false,
