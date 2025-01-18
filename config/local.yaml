@@ -1,0 +1,4 @@
+org: test-org
+is_enterprise: yes #default no
+pat: test-pat
+port: 55000

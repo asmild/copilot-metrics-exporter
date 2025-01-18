@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -23,7 +24,8 @@ func TestGetConfigFromEnv(t *testing.T) {
 	os.Setenv("PORT", TEST_PORT)
 
 	// Check that the configuration is correctly retrieved from the environment
-	config, err := GetConfig("")
+	var emptyString string
+	config, err := MustLoad(&emptyString)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -62,7 +64,8 @@ is_enterprise: %s
 	tmpFile.Close()
 
 	// Check that the configuration is correctly retrieved from the file
-	config, err := GetConfig(tmpFile.Name())
+	tmpFilePath := tmpFile.Name()
+	config, err := MustLoad(&tmpFilePath)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -73,16 +76,17 @@ is_enterprise: %s
 	assert.True(t, config.IsEnterprise)
 }
 
-func TestGetConfigFileNotFound(t *testing.T) {
+func TestMustLoad_MissingConfigFile(t *testing.T) {
 	// Try to get the configuration from a non-existent file
-	_, err := GetConfig("/path/to/nonexistent/config.yaml")
+	nonexistentFile := "/path/to/nonexistent/config.yaml"
+	_, err := MustLoad(&nonexistentFile)
 	if err == nil {
 		t.Fatal("Expected error, but got none")
 	}
 	assert.Contains(t, err.Error(), "config file not found")
 }
 
-func TestGetConfigWithDefaultPort(t *testing.T) {
+func TestMustLoad_DefaultPort(t *testing.T) {
 	// Create a configuration file without specifying the port
 	yamlContent := fmt.Sprintf(`
 org: %s
@@ -103,7 +107,8 @@ is_enterprise: %s
 	tmpFile.Close()
 
 	// Check that the configuration is correctly retrieved from the file
-	config, err := GetConfig(tmpFile.Name())
+	tmpFilePath := tmpFile.Name()
+	config, err := MustLoad(&tmpFilePath)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -111,4 +116,44 @@ is_enterprise: %s
 	assert.Equal(t, TEST_ORG, config.Organization)
 	assert.Equal(t, TEST_TOKEN, config.PersonalAccessToken)
 	assert.Equal(t, "9080", config.Port) // Default port
+}
+
+func TestMustLoad_MissingEnvVars(t *testing.T) {
+	os.Clearenv()
+
+	configPath := ""
+	config, err := MustLoad(&configPath)
+
+	require.Error(t, err)
+	assert.Nil(t, config)
+}
+
+func TestMustLoad_FallbackToDefaultConfigFile(t *testing.T) {
+	// Test loading configuration using default paths
+	yamlContent := fmt.Sprintf(`
+org: %s
+pat: %s
+`, TEST_ORG, TEST_TOKEN)
+
+	tmpFile, err := os.Create(defaultConfigPaths[0])
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name()) // Delete the file after the test
+
+	// Write YAML to the file
+	if _, err := tmpFile.Write([]byte(yamlContent)); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tmpFile.Close()
+
+	// Check that the configuration is correctly retrieved from the file
+	emptyString := ""
+	config, err := MustLoad(&emptyString)
+
+	require.NoError(t, err)
+	assert.Equal(t, TEST_ORG, config.Organization)
+	assert.Equal(t, TEST_TOKEN, config.PersonalAccessToken)
+	assert.Equal(t, defaultPort, config.Port)
+	assert.False(t, config.IsEnterprise)
 }

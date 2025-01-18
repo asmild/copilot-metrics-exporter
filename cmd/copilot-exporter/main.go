@@ -1,43 +1,44 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/asmild/copilot-metrics-exporter/config"
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/prometheus"
-	"github.com/spf13/cobra"
+	//"github.com/spf13/cobra"
 	"os"
 )
 
-var configPath string
+func execute() error {
+	configPath := flag.String("config", "", "Path to the config file")
+	flag.StringVar(configPath, "c", "", "Path to the config file (shorthand)")
+	flag.Usage = func() {
+		fmt.Println("Github Copilot usage prometheus exporter")
+		fmt.Println("\nGitHub Copilot usage prometheus exporter is a simple tool that retrieves usage statistics for GitHub Copilot\n" +
+			"and exports them in a format suitable for consumption by Prometheus. It collects data such as the total\n" +
+			"number of suggestions, the number of accepted suggestions, the total lines suggested and accepted, as well\n" +
+			"as language-specific breakdowns. This exporter can help monitor the usage of GitHub Copilot over time\n" +
+			"and identify trends in usage patterns.")
+		fmt.Println("\nUsage: program [options]")
+		fmt.Println("\nOptions:")
+		flag.PrintDefaults()
+		fmt.Println("\nConfiguration options:")
+		fmt.Println("  - config file path (default is $HOME/.copilot-exporter/config.yaml or ./config.yaml)")
+		fmt.Println("  - Environment variables:")
+		fmt.Println("    GITHUB_ORG, GITHUB_IS_ENTERPRISE, GITHUB_TOKEN, GITHUB_APP_TOKEN, PORT")
+	}
+	flag.Parse()
 
-var rootCmd = &cobra.Command{
-	Use:   "copilot-exporter",
-	Short: "Github Copilot usage prometheus exporter",
-	Long: `GitHub Copilot usage prometheus exporter is a tool that retrieves usage statistics for GitHub Copilot
-and exports them in a format suitable for consumption by Prometheus. It collects data such as the total
-number of suggestions, the number of accepted suggestions, the total lines suggested and accepted, as well
-as language-specific breakdowns. This exporter can help monitor the usage of GitHub Copilot over time
-and identify trends in usage patterns.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		conf, err := config.GetConfig(configPath)
-		if err != nil {
-			fmt.Printf("failed to read config file: %v\n", err)
-			return
-		}
-		prometheusexporter.StartExporter(conf)
-	},
-}
-
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "config file path (default is $HOME/.copilot-exporter/config.yaml)")
-}
-
-func Execute() error {
-	return rootCmd.Execute()
+	conf, err := config.MustLoad(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %v\n", err)
+	}
+	prometheusexporter.StartExporter(conf)
+	return nil
 }
 
 func main() {
-	if err := Execute(); err != nil {
+	if err := execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

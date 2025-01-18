@@ -2,7 +2,7 @@ package prometheusexporter
 
 import (
 	"fmt"
-	"github.com/asmild/copilot-metrics-exporter/config"
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/github"
 	"github.com/asmild/copilot-metrics-exporter/internal/helper"
 	"github.com/prometheus/client_golang/prometheus"
@@ -54,18 +54,18 @@ func NewCopilotMetricsCollector(githubClient *github.GitHubClient) *CopilotMetri
 			"Total number of active users utilizing GitHub Copilot last day.",
 			nil, nil,
 		),
-        totalChatAcceptances: prometheus.NewDesc("github_copilot_total_chat_acceptances",
-            "Total number of chat acceptances made by GitHub Copilot last day.",
-            nil, nil,
-        ),
-        totalChatTurns: prometheus.NewDesc("github_copilot_total_chat_turns",
-            "Total number of chat turns made by GitHub Copilot last day.",
-            nil, nil,
-        ),
-        totalActiveChatUsers: prometheus.NewDesc("github_copilot_total_active_chat_users",
-            "Total number of active chat users utilizing GitHub Copilot last day.",
-            nil, nil,
-        ),
+		totalChatAcceptances: prometheus.NewDesc("github_copilot_total_chat_acceptances",
+			"Total number of chat acceptances made by GitHub Copilot last day.",
+			nil, nil,
+		),
+		totalChatTurns: prometheus.NewDesc("github_copilot_total_chat_turns",
+			"Total number of chat turns made by GitHub Copilot last day.",
+			nil, nil,
+		),
+		totalActiveChatUsers: prometheus.NewDesc("github_copilot_total_active_chat_users",
+			"Total number of active chat users utilizing GitHub Copilot last day.",
+			nil, nil,
+		),
 		linesAcceptedDesc: prometheus.NewDesc("github_copilot_lines_accepted_breakdown",
 			"Lines accepted breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"}, nil,
@@ -174,7 +174,7 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func collectMetrics(conf *config.ExporterConfig) {
+func collectMetrics(conf *config.Config) {
 	ghc, err := github.NewGitHubClient(*conf)
 	if err != nil {
 		fmt.Printf("Failed to run GitHub Copilot exporter: %v\n", err)
@@ -190,11 +190,11 @@ func collectMetrics(conf *config.ExporterConfig) {
 	prometheus.MustRegister(collector)
 }
 
-func initMetrics(conf *config.ExporterConfig) {
+func initMetrics(conf *config.Config) {
 	collectMetrics(conf)
 }
 
-func StartExporter(conf *config.ExporterConfig) {
+func StartExporter(conf *config.Config) {
 	fmt.Println("Starting exporter on port", conf.Port)
 	if conf.IsEnterprise {
 		fmt.Println("Enterprise:", conf.Organization)
