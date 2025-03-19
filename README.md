@@ -61,3 +61,28 @@ Available metrics are:
 - github_copilot_acceptances_count_breakdown (labels: language, editor)
 - github_copilot_total_chat_acceptances
 - github_copilot_total_chat_turns
+
+### GitHub App Authentication
+As an alternative to Personal Access Tokens, you can use GitHub Apps:
+
+1. [Create a GitHub App](https://docs.github.com/en/developers/apps/creating-a-github-app) in your organization
+2. Generate a private key for your app
+3. Install the app to your organization and note the installation ID
+4. Configure using one of the following methods:
+
+#### Config file:
+```yaml
+org: myorgname
+# Either use PAT
+# pat: ghp_mygithubpat
+
+# Or use GitHub App authentication
+github_app:
+  app_id: 12345  
+  installation_id: 987654
+  private_key_path: /path/to/private-key.pem
+  # OR private_key directly (less secure)
+  # private_key: |
+  #   -----BEGIN RSA PRIVATE KEY-----
+  #   ...
+  #   -----END RSA PRIVATE KEY-----
