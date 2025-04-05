@@ -4,7 +4,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"time"
 )
@@ -92,16 +92,16 @@ func (a *GitHubAppAuth) refreshToken() (string, error) {
 // generateJWT creates a signed JWT for GitHub App authentication
 func (a *GitHubAppAuth) generateJWT() (string, error) {
 	now := time.Now()
-	claims := jwt.StandardClaims{
-		IssuedAt:  now.Unix(),
-		ExpiresAt: now.Add(10 * time.Minute).Unix(),
+	claims := &jwt.RegisteredClaims{
+		IssuedAt:  jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(10 * time.Minute)),
 		Issuer:    fmt.Sprintf("%d", a.appID),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	signedToken, err := token.SignedString(a.privateKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
 
 	return signedToken, nil
