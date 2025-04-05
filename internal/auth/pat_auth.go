@@ -10,7 +10,7 @@ func NewPATAuth(token string) *PATAuth {
 	return &PATAuth{Token: token}
 }
 
-// Token returns the PAT
-func (a *PATAuth) Token() (string, error) {
+// GetToken returns the PAT
+func (a *PATAuth) GetToken() (string, error) {
 	return a.Token, nil
 }

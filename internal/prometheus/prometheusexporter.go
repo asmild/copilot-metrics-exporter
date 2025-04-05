@@ -25,10 +25,10 @@ type CopilotMetricsCollector struct {
 	suggestionsCountDesc  *prometheus.Desc
 	acceptancesCountDesc  *prometheus.Desc
 	activeUsers           *prometheus.Desc
-	githubClient          *github.GitHubClient
+	githubClient          *github.Client
 }
 
-func NewCopilotMetricsCollector(githubClient *github.GitHubClient) *CopilotMetricsCollector {
+func NewCopilotMetricsCollector(githubClient *github.Client) *CopilotMetricsCollector {
 	return &CopilotMetricsCollector{
 		totalSeatsOccupied: prometheus.NewDesc("github_copilot_total_seats_occupied",
 			"Total number of seats occupied by users.",
@@ -175,14 +175,9 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func collectMetrics(conf *config.Config) {
-	ghc, err := github.NewGitHubClient(*conf)
+	ghc, err := github.NewClient(conf)
 	if err != nil {
-		fmt.Printf("Failed to run GitHub Copilot exporter: %v\n", err)
-		return
-	}
-
-	if err != nil {
-		fmt.Printf("Failed to get Copilot usage: %v\n", err)
+		fmt.Printf("failed to run GitHub Copilot exporter: %v\n", err)
 		return
 	}
 

@@ -4,10 +4,9 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
+	"github.com/golang-jwt/jwt"
 	"net/http"
 	"time"
-
-	"github.com/golang-jwt/jwt"
 )
 
 // GitHubAppAuth implements AuthProvider for GitHub Apps
@@ -44,8 +43,8 @@ func NewGitHubAppAuth(appID, installationID int64, privateKeyPEM []byte) (*GitHu
 	return auth, nil
 }
 
-// Token returns a valid installation token, refreshing if needed
-func (a *GitHubAppAuth) Token() (string, error) {
+// GetToken returns a valid installation token, refreshing if needed
+func (a *GitHubAppAuth) GetToken() (string, error) {
 	if a.token != "" && time.Now().Add(5*time.Minute).Before(a.expiry) {
 		return a.token, nil
 	}

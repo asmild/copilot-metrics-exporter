@@ -2,17 +2,19 @@ package auth
 
 import (
 	"errors"
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
+	"os"
 )
 
-// AuthProvider defines interface for authentication methods
-type AuthProvider interface {
-	Token() (string, error)
+// Provider defines interface for authentication methods
+type Provider interface {
+	GetToken() (string, error)
 }
 
 // NewAuthProvider creates appropriate auth provider based on config
-func NewAuthProvider(config *config.Config) (AuthProvider, error) {
-	if config.PAT != "" {
-		return NewPATAuth(config.PAT), nil
+func NewAuthProvider(config *config.Config) (Provider, error) {
+	if config.PersonalAccessToken != "" {
+		return NewPATAuth(config.PersonalAccessToken), nil
 	}
 
 	if config.GitHubApp != nil {
