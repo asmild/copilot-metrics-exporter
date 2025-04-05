@@ -1,68 +1,83 @@
 package github
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/asmild/copilot-metrics-exporter/internal/auth"
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
-	"github.com/asmild/copilot-metrics-exporter/internal/requests"
 	"net/http"
+	"time"
 )
 
-type GitHubClient struct {
-	token        string
-	appToken     string
-	Organization string
-	client       *http.Client
-	baseApiUrl   string
+type Client struct {
+	httpClient   *http.Client
+	baseURL      string
+	auth         auth.Provider
+	orgName      string
+	isEnterprise bool
 }
 
-func NewGitHubClient(conf config.Config) (*GitHubClient, error) {
-	client := &http.Client{}
-	endpoint := "orgs"
-	if conf.IsEnterprise {
-		endpoint = "enterprises"
+func NewClient(cfg *config.Config) (*Client, error) {
+	authProvider, err := auth.NewAuthProvider(cfg)
+	if err != nil {
+		return nil, err
 	}
-	return &GitHubClient{
-		token:        conf.PersonalAccessToken,
-		Organization: conf.Organization,
-		client:       client,
-		baseApiUrl:   fmt.Sprintf("https://api.github.com/%s/%s", endpoint, conf.Organization),
+
+	org := "orgs"
+	if cfg.IsEnterprise { // Adjust if enterprise URL is different
+		org = "enterprises"
+	}
+
+	baseURL := fmt.Sprintf("https://api.github.com/%s/%s", org, cfg.Organization)
+
+	return &Client{
+		httpClient:   &http.Client{Timeout: 30 * time.Second},
+		baseURL:      baseURL,
+		auth:         authProvider,
+		orgName:      cfg.Organization,
+		isEnterprise: cfg.IsEnterprise,
 	}, nil
 }
 
-func (c *GitHubClient) makeRequest(method, endpoint string, data interface{}) (*http.Response, error) {
-	headers := map[string]string{
-		"Accept":               "application/vnd.github+json",
-		"X-GitHub-Api-Version": "2022-11-28",
+func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
+	token, err := c.auth.GetToken()
+	if err != nil {
+		return nil, err
 	}
 
-	if c.token != "" {
-		headers["Authorization"] = "Bearer " + c.token
-	} else if c.appToken != "" {
-		headers["Authorization"] = "Bearer " + c.appToken
-	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
-	url := fmt.Sprintf("%s/%s", c.baseApiUrl, endpoint)
-	res, err := requests.HttpRequester(c.client, url, headers, method, data)
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		var errorMessage struct {
-			Message          string `json:"message"`
-			DocumentationURL string `json:"documentation_url"`
-		}
-		err = json.NewDecoder(res.Body).Decode(&errorMessage)
-		if err != nil {
-			return nil, fmt.Errorf("HTTP request failed with status %d: %s", res.StatusCode, res.Status)
-		}
-		return nil, fmt.Errorf("HTTP request to %s failed with status %d: %s (%s)", url, res.StatusCode, errorMessage.Message, errorMessage.DocumentationURL)
-	}
-
-	return res, nil
+	return c.httpClient.Do(req)
 }
 
-func (c *GitHubClient) get(endpoint string) (*http.Response, error) {
-	return c.makeRequest("GET", endpoint, nil)
+// Other methods that make API calls remain unchanged except for error handling
+func (c *Client) get(endpoint string) (*http.Response, error) {
+	// Create a GET request
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doRequest(req)
 }
 
-func (c *GitHubClient) post(endpoint string, data interface{}) (*http.Response, error) {
-	return c.makeRequest("POST", endpoint, data)
+func (c *Client) post(endpoint string, data interface{}) (*http.Response, error) {
+	// Marshal data into JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a POST request
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doRequest(req)
 }

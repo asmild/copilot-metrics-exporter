@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (c *GitHubClient) GetCopilotUsage() ([]CopilotUsage, error) {
+func (c *Client) GetCopilotUsage() ([]CopilotUsage, error) {
 	res, err := c.get("copilot/usage")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get copilot usage data: %v", err)
@@ -20,7 +20,7 @@ func (c *GitHubClient) GetCopilotUsage() ([]CopilotUsage, error) {
 	return usage, nil
 }
 
-func (c *GitHubClient) GetBilling() (CopilotBilling, error) {
+func (c *Client) GetBilling() (CopilotBilling, error) {
 	res, err := c.get("copilot/billing")
 	if err != nil {
 		return CopilotBilling{}, fmt.Errorf("failed to get copilot billing data: %v", err)
@@ -35,7 +35,7 @@ func (c *GitHubClient) GetBilling() (CopilotBilling, error) {
 	return billing, nil
 }
 
-func (c *GitHubClient) GetBillingSeats() (CopilotBillingSeats, error) {
+func (c *Client) GetBillingSeats() (CopilotBillingSeats, error) {
 	//TODO: Response is paginated, so we need to handle that
 	// see https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api?apiVersion=2022-11-28
 	res, err := c.get("copilot/billing/seats")
