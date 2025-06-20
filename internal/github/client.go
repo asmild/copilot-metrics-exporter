@@ -30,7 +30,6 @@ func NewClient(cfg *config.Config) (*Client, error) {
 	}
 
 	baseURL := fmt.Sprintf("https://api.github.com/%s/%s", org, cfg.Organization)
-
 	return &Client{
 		httpClient:   &http.Client{Timeout: 30 * time.Second},
 		baseURL:      baseURL,
@@ -45,9 +44,7 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
@@ -58,7 +55,7 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 // Other methods that make API calls remain unchanged except for error handling
 func (c *Client) get(endpoint string) (*http.Response, error) {
 	// Create a GET request
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", c.baseURL, endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +71,7 @@ func (c *Client) post(endpoint string, data interface{}) (*http.Response, error)
 	}
 
 	// Create a POST request
-	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.baseURL, endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}

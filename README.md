@@ -59,8 +59,9 @@ Available metrics are:
 - github_copilot_lines_suggested_breakdown (labels: language, editor)
 - github_copilot_lines_accepted_breakdown (labels: language, editor)
 - github_copilot_acceptances_count_breakdown (labels: language, editor)
-- github_copilot_total_chat_acceptances
-- github_copilot_total_chat_turns
+- github_copilot_total_chats
+- github_copilot_total_chat_insertions
+- github_copilot_total_chat_copies
 
 ### GitHub App Authentication
 As an alternative to Personal Access Tokens, you can use GitHub Apps:

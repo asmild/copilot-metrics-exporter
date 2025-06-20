@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/prometheus"
-	//"github.com/spf13/cobra"
 	"os"
 )
 
