@@ -19,6 +19,5 @@ RUN addgroup -S exporter && adduser -S exporter -G exporter
 USER exporter
 COPY --from=builder /app/copilot-metrics-exporter /copilot-metrics-exporter
 
-USER nonroot
 CMD ["/copilot-metrics-exporter"]
 
