@@ -94,7 +94,7 @@ func NewCopilotMetricsCollector(githubClient *github.Client) *CopilotMetricsColl
 
 		acceptancesCountDesc: prometheus.NewDesc(
 			"github_copilot_acceptances_count_breakdown",
-			"Acceptanse count breakdown for GitHub Copilot by language and editor.",
+			"Acceptance count breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"},
 			nil,
 		),
