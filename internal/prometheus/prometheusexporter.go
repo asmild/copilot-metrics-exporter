@@ -208,5 +208,4 @@ func StartExporter(conf *config.Config) {
 			fmt.Printf("Failed to start HTTP server: %v\n", err)
 		}
 	}
-	fmt.Println("Exporter started successfully")
 }
