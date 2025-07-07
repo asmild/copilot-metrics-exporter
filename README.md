@@ -87,3 +87,16 @@ github_app:
   #   -----BEGIN RSA PRIVATE KEY-----
   #   ...
   #   -----END RSA PRIVATE KEY-----
+
+# Optional TLS configuration
+tls:
+  enabled: true
+  cert_file: /path/to/certificate.pem
+  key_file: /path/to/private-key.pem
+```
+
+### Security Notes
+- When TLS is enabled, the exporter will serve HTTPS on the configured port
+- Ensure your certificate files are properly secured with appropriate file permissions
+- The TLS implementation uses TLS 1.2 as the minimum version for security
+- For production use, consider using certificates from a trusted Certificate Authority (such as "Let's Encrypt")

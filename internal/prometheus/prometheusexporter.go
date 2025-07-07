@@ -2,13 +2,14 @@ package prometheusexporter
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/github"
 	"github.com/asmild/copilot-metrics-exporter/internal/helper"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
-	"time"
 )
 
 type CopilotMetricsCollector struct {
@@ -79,28 +80,28 @@ func NewCopilotMetricsCollector(githubClient *github.Client) *CopilotMetricsColl
 
 		linesSuggestedDesc: prometheus.NewDesc(
 			"github_copilot_lines_suggested_breakdown",
-			fmt.Sprintf("Lines suggested breakdown for GitHub Copilot by language and editor."),
+			"Lines suggested breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"},
 			nil,
 		),
 
 		suggestionsCountDesc: prometheus.NewDesc(
 			"github_copilot_suggestions_count_breakdown",
-			fmt.Sprintf("Suggestions count breakdown for GitHub Copilot by language and editor."),
+			"Suggestions count breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"},
 			nil,
 		),
 
 		acceptancesCountDesc: prometheus.NewDesc(
 			"github_copilot_acceptances_count_breakdown",
-			fmt.Sprintf("Acceptanse count breakdown for GitHub Copilot by language and editor."),
+			"Acceptance count breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"},
 			nil,
 		),
 
 		activeUsers: prometheus.NewDesc(
 			"github_copilot_active_users_breakdown",
-			fmt.Sprintf("Active users breakdown for GitHub Copilot by language and editor."),
+			"Active users breakdown for GitHub Copilot by language and editor.",
 			[]string{"language", "editor"},
 			nil,
 		),
@@ -187,10 +188,24 @@ func StartExporter(conf *config.Config) {
 	} else {
 		fmt.Println("Organization:", conf.Organization)
 	}
+
 	initMetrics(conf)
-	http.Handle("/metrics", promhttp.Handler())
-	err := http.ListenAndServe(":"+conf.Port, nil)
-	if err != nil {
-		fmt.Printf("Failed to start HTTP server: %v\n", err)
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	addr := fmt.Sprintf(":%s", conf.Port)
+
+	if conf.TLS != nil && conf.TLS.Enabled {
+		fmt.Println("TLS enabled - using HTTPS")
+		err := http.ListenAndServeTLS(addr, conf.TLS.CertFile, conf.TLS.KeyFile, mux)
+		if err != nil {
+			fmt.Printf("Failed to start HTTPS server: %v\n", err)
+		}
+	} else {
+		fmt.Println("TLS disabled - using HTTP")
+		err := http.ListenAndServe(addr, mux)
+		if err != nil {
+			fmt.Printf("Failed to start HTTP server: %v\n", err)
+		}
 	}
 }
