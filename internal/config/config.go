@@ -1,10 +1,12 @@
 package config
 
 import (
+	"crypto/tls"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"strconv"
+
+	"gopkg.in/yaml.v3"
 )
 
 const defaultPort = "9080"
@@ -17,6 +19,13 @@ type GitHubApp struct {
 	PrivateKey     string `yaml:"private_key"`
 }
 
+// TLSConfig holds TLS certificate configuration
+type TLSConfig struct {
+	Enabled  bool   `yaml:"enabled"`
+	CertFile string `yaml:"cert_file"`
+	KeyFile  string `yaml:"key_file"`
+}
+
 // Config holds the application configuration
 type Config struct {
 	Organization        string     `yaml:"org"`
@@ -24,6 +33,7 @@ type Config struct {
 	GitHubApp           *GitHubApp `yaml:"github_app"`
 	Port                string     `yaml:"port"`
 	IsEnterprise        bool       `yaml:"is_enterprise"`
+	TLS                 *TLSConfig `yaml:"tls"`
 }
 
 var defaultConfigPaths = []string{
@@ -42,6 +52,11 @@ func MustLoad(configPath *string) (*Config, error) {
 		token := os.Getenv("GITHUB_TOKEN")
 		port := os.Getenv("PORT")
 
+		// TLS configuration from environment variables
+		tlsEnabled := os.Getenv("TLS_ENABLED")
+		tlsCertFile := os.Getenv("TLS_CERT_FILE")
+		tlsKeyFile := os.Getenv("TLS_KEY_FILE")
+
 		// Check for GitHub App environment variables
 		appIDStr := os.Getenv("GITHUB_APP_ID")
 		installIDStr := os.Getenv("GITHUB_APP_INSTALLATION_ID")
@@ -54,6 +69,15 @@ func MustLoad(configPath *string) (*Config, error) {
 			config.Organization = org
 			config.PersonalAccessToken = token
 			config.IsEnterprise = isEnterprise == "true"
+
+			// Configure TLS if environment variables are set
+			if tlsEnabled == "true" {
+				config.TLS = &TLSConfig{
+					Enabled:  true,
+					CertFile: tlsCertFile,
+					KeyFile:  tlsKeyFile,
+				}
+			}
 
 			// If GitHub App environment variables are provided
 			if appIDStr != "" && installIDStr != "" {
@@ -103,5 +127,25 @@ func MustLoad(configPath *string) (*Config, error) {
 		config.Port = defaultPort
 	}
 
+	// Validate TLS configuration
+	if err := validateTLSConfig(&config); err != nil {
+		return nil, fmt.Errorf("invalid TLS configuration: %v", err)
+	}
+
 	return &config, nil
+}
+
+// validateTLSConfig validates the TLS configuration
+func validateTLSConfig(config *Config) error {
+	if config.TLS == nil || !config.TLS.Enabled {
+		return nil
+	}
+
+	// Optionally, you can add more checks here, such as validating the certificate format
+	_, err := tls.LoadX509KeyPair(config.TLS.CertFile, config.TLS.KeyFile)
+	if err != nil {
+		return fmt.Errorf("failed to load TLS certificate and key: %v", err)
+	}
+
+	return nil
 }

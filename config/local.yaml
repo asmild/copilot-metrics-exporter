@@ -1,4 +1,27 @@
-org: test-org
-is_enterprise: yes #default no
-pat: test-pat
-port: 55000
+# Example configuration file for GitHub Copilot Metrics Exporter
+# This file shows all available configuration options
+
+# GitHub Organization or Enterprise settings
+org: example-org
+is_enterprise: false  # Set to true for GitHub Enterprise
+pat: your-personal-access-token-here
+
+# Alternative: GitHub App authentication
+# github_app:
+#   app_id: 123456
+#   installation_id: 987654
+#   private_key_path: /path/to/private-key.pem
+#   # Or provide the private key directly:
+#   # private_key: |
+#   #   -----BEGIN PRIVATE KEY-----
+#   #   YOUR_PRIVATE_KEY_CONTENT_HERE
+#   #   -----END PRIVATE KEY-----
+
+# Server settings
+port: 9080
+
+# TLS/SSL settings for HTTPS
+tls:
+  enabled: false  # Set to true to enable HTTPS
+  cert_file: /path/to/server.crt  # Path to TLS certificate file
+  key_file: /path/to/server.key   # Path to TLS private key file
