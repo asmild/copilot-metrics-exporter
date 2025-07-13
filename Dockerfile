@@ -12,7 +12,7 @@ RUN echo "Building ${BIN}..." && \
     go test -v ./... && \
     go build -o ${BIN} ${SRC}/main.go
 
-FROM alpine:3.21.1 AS runtime
+FROM alpine:3.21.3 AS runtime
 ENV TZ=UTC
 
 RUN addgroup -S exporter && adduser -S exporter -G exporter
