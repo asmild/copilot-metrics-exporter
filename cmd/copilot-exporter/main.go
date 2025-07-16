@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/asmild/copilot-metrics-exporter/internal/config"
-	"github.com/asmild/copilot-metrics-exporter/internal/prometheus"
 	"os"
+
+	"github.com/asmild/copilot-metrics-exporter/internal/config"
+	prometheusexporter "github.com/asmild/copilot-metrics-exporter/internal/prometheus"
 )
 
 func execute() error {
@@ -25,12 +26,13 @@ func execute() error {
 		fmt.Println("  - config file path (default is $HOME/.copilot-exporter/config.yaml or ./config.yaml)")
 		fmt.Println("  - Environment variables:")
 		fmt.Println("    GITHUB_ORG, GITHUB_IS_ENTERPRISE, GITHUB_TOKEN, GITHUB_APP_TOKEN, PORT")
+		fmt.Println("    TLS_ENABLED, TLS_CERT_FILE, TLS_KEY_FILE")
 	}
 	flag.Parse()
 
 	conf, err := config.MustLoad(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read config file: %v\n", err)
+		return fmt.Errorf("failed to read config file: %v", err)
 	}
 	prometheusexporter.StartExporter(conf)
 	return nil
