@@ -25,3 +25,9 @@ tls:
   enabled: false  # Set to true to enable HTTPS
   cert_file: /path/to/server.crt  # Path to TLS certificate file
   key_file: /path/to/server.key   # Path to TLS private key file
+
+# Basic Authentication settings
+basic_auth:
+  enabled: true # Set to true to enable basic authentication
+  username: prometheus  # Username for basic auth
+  password: $2a...      # bcrypt hash

@@ -93,10 +93,54 @@ tls:
   enabled: true
   cert_file: /path/to/certificate.pem
   key_file: /path/to/private-key.pem
+
+# Optional Basic Authentication
+basic_auth:
+  enabled: true
+  username: prometheus
+  password: $2a$12$bcrypt.hash.of.password  # Use bcrypt hash, not plaintext
+```
+
+#### Environment variables:
+```bash
+export GITHUB_ORG=myorgname
+export GITHUB_APP_ID=12345
+export GITHUB_APP_INSTALLATION_ID=987654
+export GITHUB_APP_PRIVATE_KEY_PATH=/path/to/private-key.pem
+export TLS_ENABLED=true
+export TLS_CERT_FILE=/path/to/certificate.pem
+export TLS_KEY_FILE=/path/to/private-key.pem
+export BASIC_AUTH_ENABLED=true
+export BASIC_AUTH_USERNAME=admin
+export BASIC_AUTH_PASSWORD=$2a$12$bcrypt.hash.of.password
+```
+
+### Basic Authentication
+The exporter supports optional HTTP Basic Authentication to protect the metrics endpoint. When enabled, clients must provide valid credentials to access the `/metrics` endpoint.
+
+#### Configuration:
+- **Username**: Any string (configured in `basic_auth.username`)
+- **Password**: Must be a bcrypt hash (configured in `basic_auth.password`)
+
+#### Generating bcrypt password hashes:
+You can use the included utility to generate bcrypt hashes:
+
+```bash
+# Generate a bcrypt hash for your password
+go run tools/hash-password/main.go -password "your-password-here"
+```
+
+#### Usage:
+Once configured, access the metrics endpoint with basic auth:
+```bash
+curl -u admin:your-password http://localhost:9080/metrics
 ```
 
 ### Security Notes
 - When TLS is enabled, the exporter will serve HTTPS on the configured port
+- When Basic Auth is enabled, credentials are required to access the metrics endpoint
+- Use bcrypt hashed passwords, never store plaintext passwords in configuration
 - Ensure your certificate files are properly secured with appropriate file permissions
 - The TLS implementation uses TLS 1.2 as the minimum version for security
 - For production use, consider using certificates from a trusted Certificate Authority (such as "Let's Encrypt")
+- Always use HTTPS when basic auth is enabled to protect credentials in transit

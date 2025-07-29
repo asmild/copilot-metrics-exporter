@@ -27,6 +27,7 @@ func execute() error {
 		fmt.Println("  - Environment variables:")
 		fmt.Println("    GITHUB_ORG, GITHUB_IS_ENTERPRISE, GITHUB_TOKEN, GITHUB_APP_TOKEN, PORT")
 		fmt.Println("    TLS_ENABLED, TLS_CERT_FILE, TLS_KEY_FILE")
+		fmt.Println("    BASIC_AUTH_ENABLED, BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD")
 	}
 	flag.Parse()
 

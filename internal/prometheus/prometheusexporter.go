@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/asmild/copilot-metrics-exporter/internal/auth"
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	"github.com/asmild/copilot-metrics-exporter/internal/github"
 	"github.com/asmild/copilot-metrics-exporter/internal/helper"
@@ -189,10 +190,27 @@ func StartExporter(conf *config.Config) {
 		fmt.Println("Organization:", conf.Organization)
 	}
 
+	// Print basic auth status
+	if conf.BasicAuth != nil && conf.BasicAuth.Enabled {
+		fmt.Println("Basic Auth: enabled")
+	} else {
+		fmt.Println("Basic Auth: disabled")
+	}
+
 	initMetrics(conf)
 
 	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
+
+	// Create the metrics handler
+	metricsHandler := promhttp.Handler()
+
+	// Apply basic auth middleware if configured
+	if conf.BasicAuth != nil && conf.BasicAuth.Enabled {
+		basicAuthMiddleware := auth.BasicAuthMiddleware(conf.BasicAuth)
+		metricsHandler = basicAuthMiddleware(metricsHandler)
+	}
+
+	mux.Handle("/metrics", metricsHandler)
 	addr := fmt.Sprintf(":%s", conf.Port)
 
 	if conf.TLS != nil && conf.TLS.Enabled {

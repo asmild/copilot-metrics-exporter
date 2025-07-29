@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,14 +27,22 @@ type TLSConfig struct {
 	KeyFile  string `yaml:"key_file"`
 }
 
+// BasicAuthConfig holds basic authentication configuration
+type BasicAuthConfig struct {
+	Enabled  bool   `yaml:"enabled"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"` // bcrypt hashed password
+}
+
 // Config holds the application configuration
 type Config struct {
-	Organization        string     `yaml:"org"`
-	PersonalAccessToken string     `yaml:"pat"`
-	GitHubApp           *GitHubApp `yaml:"github_app"`
-	Port                string     `yaml:"port"`
-	IsEnterprise        bool       `yaml:"is_enterprise"`
-	TLS                 *TLSConfig `yaml:"tls"`
+	Organization        string           `yaml:"org"`
+	PersonalAccessToken string           `yaml:"pat"`
+	GitHubApp           *GitHubApp       `yaml:"github_app"`
+	Port                string           `yaml:"port"`
+	IsEnterprise        bool             `yaml:"is_enterprise"`
+	TLS                 *TLSConfig       `yaml:"tls"`
+	BasicAuth           *BasicAuthConfig `yaml:"basic_auth"`
 }
 
 var defaultConfigPaths = []string{
@@ -57,6 +66,11 @@ func MustLoad(configPath *string) (*Config, error) {
 		tlsCertFile := os.Getenv("TLS_CERT_FILE")
 		tlsKeyFile := os.Getenv("TLS_KEY_FILE")
 
+		// Basic Auth configuration from environment variables
+		basicAuthEnabled := os.Getenv("BASIC_AUTH_ENABLED")
+		basicAuthUsername := os.Getenv("BASIC_AUTH_USERNAME")
+		basicAuthPassword := os.Getenv("BASIC_AUTH_PASSWORD")
+
 		// Check for GitHub App environment variables
 		appIDStr := os.Getenv("GITHUB_APP_ID")
 		installIDStr := os.Getenv("GITHUB_APP_INSTALLATION_ID")
@@ -76,6 +90,15 @@ func MustLoad(configPath *string) (*Config, error) {
 					Enabled:  true,
 					CertFile: tlsCertFile,
 					KeyFile:  tlsKeyFile,
+				}
+			}
+
+			// Configure Basic Auth if environment variables are set
+			if basicAuthEnabled == "true" && basicAuthUsername != "" && basicAuthPassword != "" {
+				config.BasicAuth = &BasicAuthConfig{
+					Enabled:  true,
+					Username: basicAuthUsername,
+					Password: basicAuthPassword, // Expect this to be bcrypt hashed
 				}
 			}
 
@@ -132,6 +155,11 @@ func MustLoad(configPath *string) (*Config, error) {
 		return nil, fmt.Errorf("invalid TLS configuration: %v", err)
 	}
 
+	// Validate Basic Auth configuration
+	if err := validateBasicAuthConfig(&config); err != nil {
+		return nil, fmt.Errorf("invalid Basic Auth configuration: %v", err)
+	}
+
 	return &config, nil
 }
 
@@ -145,6 +173,28 @@ func validateTLSConfig(config *Config) error {
 	_, err := tls.LoadX509KeyPair(config.TLS.CertFile, config.TLS.KeyFile)
 	if err != nil {
 		return fmt.Errorf("failed to load TLS certificate and key: %v", err)
+	}
+
+	return nil
+}
+
+// validateBasicAuthConfig validates the basic auth configuration
+func validateBasicAuthConfig(config *Config) error {
+	if config.BasicAuth == nil || !config.BasicAuth.Enabled {
+		return nil
+	}
+
+	if config.BasicAuth.Username == "" {
+		return fmt.Errorf("username is required when basic auth is enabled")
+	}
+
+	if config.BasicAuth.Password == "" {
+		return fmt.Errorf("password is required when basic auth is enabled")
+	}
+
+	// Check if password looks like a bcrypt hash
+	if len(config.BasicAuth.Password) < 60 || !strings.HasPrefix(config.BasicAuth.Password, "$2") {
+		return fmt.Errorf("password must be a bcrypt hash (starts with $2 and at least 60 characters)")
 	}
 
 	return nil
