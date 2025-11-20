@@ -47,9 +47,3 @@ jobs:
           output_name="${output_name}.exe"
         fi
         go build -o "build/${output_name}" ./cmd/copilot-exporter/main.go
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: copilot-metrics-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
-        path: build/*
