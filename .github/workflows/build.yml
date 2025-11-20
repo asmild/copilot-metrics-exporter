@@ -33,6 +33,9 @@ jobs:
       with:
         go-version: '1.25.4'
 
+    - name: Run tests
+      run: go test -v ./...
+
     - name: Build binary
       env:
         GOOS: ${{ matrix.goos }}
@@ -44,9 +47,3 @@ jobs:
           output_name="${output_name}.exe"
         fi
         go build -o "build/${output_name}" ./cmd/copilot-exporter/main.go
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: copilot-metrics-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
-        path: build/*
