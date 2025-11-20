@@ -1,5 +1,5 @@
 
-FROM golang:1.23.4-alpine3.21 AS builder
+FROM golang:1.25.4-alpine3.22 AS builder
 ARG BIN=copilot-metrics-exporter
 ARG SRC=./cmd/copilot-exporter
 
@@ -12,7 +12,7 @@ RUN echo "Building ${BIN}..." && \
     go test -v ./... && \
     go build -o ${BIN} ${SRC}/main.go
 
-FROM alpine:3.21.1 AS runtime
+FROM alpine:3.22.2 AS runtime
 ENV TZ=UTC
 
 RUN addgroup -S exporter && adduser -S exporter -G exporter
