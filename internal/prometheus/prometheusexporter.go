@@ -128,7 +128,9 @@ func (collector *CopilotMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
-	since := time.Now().AddDate(0, 0, -1).Format("2006-01-02T15:04:05Z")
+	// GitHub API calculates metrics based on UTC days, so we must use UTC timezone
+	// to avoid requesting data for days that haven't been calculated yet
+	since := time.Now().UTC().AddDate(0, 0, -28).Format("2006-01-02T15:04:05Z")
 	copilotUsage, err := collector.githubClient.GetCopilotMetrics(&since)
 
 	if err != nil {
