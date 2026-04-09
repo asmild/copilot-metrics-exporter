@@ -110,30 +110,25 @@ func TestGetTotalActiveChatUsers(t *testing.T) {
 }
 
 func TestNilReportSafety(t *testing.T) {
-	if GetTotalSuggestionsCount(nil) != 0 {
-		t.Error("Expected 0 for nil")
+	nilChecks := []struct {
+		name string
+		fn   func(*github.UsageReport) float64
+	}{
+		{"GetTotalSuggestionsCount", GetTotalSuggestionsCount},
+		{"GetTotalAcceptancesCount", GetTotalAcceptancesCount},
+		{"GetTotalLinesSuggested", GetTotalLinesSuggested},
+		{"GetTotalLinesAccepted", GetTotalLinesAccepted},
+		{"GetTotalActiveUsers", GetTotalActiveUsers},
+		{"GetTotalChats", GetTotalChats},
+		{"GetTotalActiveChatUsers", GetTotalActiveChatUsers},
 	}
-	if GetTotalAcceptancesCount(nil) != 0 {
-		t.Error("Expected 0 for nil")
+	for _, tc := range nilChecks {
+		if tc.fn(nil) != 0 {
+			t.Errorf("%s: expected 0 for nil report", tc.name)
+		}
 	}
-	if GetTotalLinesSuggested(nil) != 0 {
-		t.Error("Expected 0 for nil")
-	}
-	if GetTotalLinesAccepted(nil) != 0 {
-		t.Error("Expected 0 for nil")
-	}
-	if GetTotalActiveUsers(nil) != 0 {
-		t.Error("Expected 0 for nil")
-	}
-	if GetTotalChats(nil) != 0 {
-		t.Error("Expected 0 for nil")
-	}
-if GetTotalActiveChatUsers(nil) != 0 {
-		t.Error("Expected 0 for nil")
-	}
-	breakdown := ComputeLanguageBreakdown(nil)
-	if len(breakdown) != 0 {
-		t.Error("Expected empty breakdown for nil")
+	if len(ComputeLanguageBreakdown(nil)) != 0 {
+		t.Error("ComputeLanguageBreakdown: expected empty breakdown for nil report")
 	}
 }
 

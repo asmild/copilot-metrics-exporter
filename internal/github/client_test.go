@@ -13,22 +13,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testReportDay = "2026-04-08"
+	testToken     = "test-token"
+	testOrg       = "test-org"
+)
+
 func TestNewClient(t *testing.T) {
 	conf := config.Config{
-		PersonalAccessToken: "test-token",
-		Organization:        "test-org",
+		PersonalAccessToken: testToken,
+		Organization:        testOrg,
 		IsEnterprise:        false,
 	}
 	client, err := NewClient(&conf)
 	require.NoError(t, err)
-	assert.Equal(t, "test-org", client.org)
+	assert.Equal(t, testOrg, client.org)
 	assert.False(t, client.isEnterprise)
 	assert.NotNil(t, client.gh)
 }
 
 func TestNewClientEnterprise(t *testing.T) {
 	conf := config.Config{
-		PersonalAccessToken: "test-token",
+		PersonalAccessToken: testToken,
 		Organization:        "test-enterprise",
 		IsEnterprise:        true,
 	}
@@ -40,7 +46,7 @@ func TestNewClientEnterprise(t *testing.T) {
 
 func TestNewClientNoAuth(t *testing.T) {
 	conf := config.Config{
-		Organization: "test-org",
+		Organization: testOrg,
 	}
 	_, err := NewClient(&conf)
 	assert.Error(t, err)
@@ -48,7 +54,7 @@ func TestNewClientNoAuth(t *testing.T) {
 
 func TestGetMetrics(t *testing.T) {
 	reportData := UsageReport{
-		Day:                         "2026-04-08",
+		Day:                         testReportDay,
 		DailyActiveUsers:            116,
 		CodeGenerationActivityCount: 2164,
 		CodeAcceptanceActivityCount: 546,
@@ -65,7 +71,7 @@ func TestGetMetrics(t *testing.T) {
 	// Test server for GitHub API (report endpoint returns download links)
 	reportResponse := gogithub.CopilotDailyMetricsReport{
 		DownloadLinks: []string{reportServer.URL + "/report.json"},
-		ReportDay:     "2026-04-08",
+		ReportDay:     testReportDay,
 	}
 
 	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -75,8 +81,8 @@ func TestGetMetrics(t *testing.T) {
 	defer apiServer.Close()
 
 	conf := config.Config{
-		PersonalAccessToken: "test-token",
-		Organization:        "test-org",
+		PersonalAccessToken: testToken,
+		Organization:        testOrg,
 		IsEnterprise:        false,
 	}
 	client, err := NewClient(&conf)
@@ -87,7 +93,7 @@ func TestGetMetrics(t *testing.T) {
 
 	report, err := client.GetMetrics(context.Background())
 	require.NoError(t, err)
-	assert.Equal(t, "2026-04-08", report.Day)
+	assert.Equal(t, testReportDay, report.Day)
 	assert.Equal(t, 116, report.DailyActiveUsers)
 	assert.Equal(t, 2164, report.CodeGenerationActivityCount)
 	assert.Equal(t, 1353, report.LocAddedSum)
@@ -107,8 +113,8 @@ func TestGetTotalSeats(t *testing.T) {
 	defer apiServer.Close()
 
 	conf := config.Config{
-		PersonalAccessToken: "test-token",
-		Organization:        "test-org",
+		PersonalAccessToken: testToken,
+		Organization:        testOrg,
 		IsEnterprise:        false,
 	}
 	client, err := NewClient(&conf)
