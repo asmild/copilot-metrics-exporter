@@ -10,7 +10,7 @@ The metrics are collected from the GitHub Copilot API and are exposed in a forma
 The exporter is designed to be run as a standalone service and can be deployed as a containerized application.
 
 ### Key metrics
-All metrics are provided by the last available day in the GitHub Copilot API. 
+All metrics represent a single day's data. The exporter requests yesterday's metrics (UTC) from the GitHub Copilot API, falling back to the day before yesterday if the data is not yet available. GitHub [processes metrics once per day for the previous day](https://docs.github.com/en/rest/copilot/copilot-metrics?apiVersion=2022-11-28#get-copilot-metrics-for-an-organization), so there is typically a ~24h delay.
 
 - Acceptance Rate: This metric represents the ratio of accepted lines to the total lines suggested by GitHub Copilot. This rate is an indicator of the relevance and usefulness of Copilot's suggestions.
 - Total Suggestions This chart illustrates the total number of code suggestions made by GitHub Copilot. It offers a view of the tool's activity and its engagement with users over time.

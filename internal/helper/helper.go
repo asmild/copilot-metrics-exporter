@@ -1,213 +1,106 @@
 package helper
 
 import (
-	"fmt"
 	"github.com/asmild/copilot-metrics-exporter/internal/github"
-	"time"
 )
 
-func GetLastDayData(usages []github.CopilotMetrics) github.CopilotMetrics {
-	var maxDate time.Time
-	var lastDayData github.CopilotMetrics
-
-	for _, item := range usages {
-		date, err := time.Parse("2006-01-02", item.Date)
-		if err != nil {
-			fmt.Println("Failed to parse date: ", err)
-			continue
-		}
-		if date.After(maxDate) {
-			maxDate = date
-			lastDayData = item
-		}
+func GetTotalSuggestionsCount(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-	return lastDayData
+	return float64(report.CodeGenerationActivityCount)
 }
 
-func GetTotalSuggestionsCount(metrics github.CopilotMetrics) float64 {
-	totalSuggestions := 0
-
-	// Sum suggestions from languages
-	for _, lang := range metrics.CopilotIDECodeCompletions.Languages {
-		totalSuggestions += lang.TotalSuggestions
+func GetTotalAcceptancesCount(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-
-	// Sum suggestions from editors' models' languages
-	for _, editor := range metrics.CopilotIDECodeCompletions.Editors {
-		for _, model := range editor.Models {
-			for _, lang := range model.Languages {
-				totalSuggestions += lang.TotalSuggestions
-			}
-		}
-	}
-
-	return float64(totalSuggestions)
+	return float64(report.CodeAcceptanceActivityCount)
 }
 
-func GetTotalAcceptancesCount(metrics github.CopilotMetrics) float64 {
-	totalAcceptances := 0
-
-	// Sum accepted suggestions from languages
-	for _, lang := range metrics.CopilotIDECodeCompletions.Languages {
-		totalAcceptances += lang.TotalAcceptances
+func GetTotalLinesSuggested(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-
-	// Sum accepted suggestions from editors' models' languages
-	for _, editor := range metrics.CopilotIDECodeCompletions.Editors {
-		for _, model := range editor.Models {
-			for _, lang := range model.Languages {
-				totalAcceptances += lang.TotalAcceptances
-			}
-		}
-	}
-
-	return float64(totalAcceptances)
+	return float64(report.LocSuggestedToAddSum)
 }
 
-func GetTotalLinesSuggested(metrics github.CopilotMetrics) float64 {
-	totalLinesSuggested := 0
-
-	// Sum lines suggested from languages
-	for _, lang := range metrics.CopilotIDECodeCompletions.Languages {
-		totalLinesSuggested += lang.TotalLinesSuggested
+func GetTotalLinesAccepted(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-
-	// Sum lines suggested from editors' models' languages
-	for _, editor := range metrics.CopilotIDECodeCompletions.Editors {
-		for _, model := range editor.Models {
-			for _, lang := range model.Languages {
-				totalLinesSuggested += lang.TotalLinesSuggested
-			}
-		}
-	}
-	return float64(totalLinesSuggested)
+	return float64(report.LocAddedSum)
 }
 
-func GetTotalLinesAccepted(metrics github.CopilotMetrics) float64 {
-	totalLinesAccepted := 0
-
-	// Sum accepted lines from languages
-	for _, lang := range metrics.CopilotIDECodeCompletions.Languages {
-		totalLinesAccepted += lang.TotalLinesAccepted
+func GetTotalActiveUsers(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-
-	// Sum accepted lines from editors' models' languages
-	for _, editor := range metrics.CopilotIDECodeCompletions.Editors {
-		for _, model := range editor.Models {
-			for _, lang := range model.Languages {
-				totalLinesAccepted += lang.TotalLinesAccepted
-			}
-		}
-	}
-	return float64(totalLinesAccepted)
+	return float64(report.DailyActiveUsers)
 }
 
-func GetTotalActiveUsers(metrics github.CopilotMetrics) float64 {
-	return float64(metrics.TotalActiveUsers)
+func GetTotalChats(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
+	}
+	return float64(report.UserInitiatedInteractionCount)
 }
 
-func GetTotalChats(metrics github.CopilotMetrics) float64 {
-	totalChats := 0
-
-	// Sum chats from IDE chat editors' models
-	for _, editor := range metrics.CopilotIDEChat.Editors {
-		for _, model := range editor.Models {
-			totalChats += model.TotalChats
-		}
+func GetTotalActiveChatUsers(report *github.UsageReport) float64 {
+	if report == nil {
+		return 0
 	}
-
-	// Sum chats from Dotcom chat models
-	for _, model := range metrics.CopilotDotcomChat.Models {
-		totalChats += model.TotalChats
-	}
-	return float64(totalChats)
+	return float64(report.MonthlyActiveChatUsers)
 }
 
-func GetTotalChatInsertions(metrics github.CopilotMetrics) float64 {
-	totalChatAcceptance := 0
-
-	// Sum chat acceptances from IDE chat editors' models
-	for _, editor := range metrics.CopilotIDEChat.Editors {
-		for _, model := range editor.Models {
-			totalChatAcceptance += model.TotalChatInsertions
-		}
-	}
-
-	// Sum chat acceptances from Dotcom chat models
-	for _, model := range metrics.CopilotDotcomChat.Models {
-		totalChatAcceptance += model.TotalChatInsertions
-	}
-	return float64(totalChatAcceptance)
-}
-
-func GetTotalChatCopies(metrics github.CopilotMetrics) float64 {
-	totalChatAcceptance := 0
-
-	// Sum chat code copying from IDE chat editors' models
-	for _, editor := range metrics.CopilotIDEChat.Editors {
-		for _, model := range editor.Models {
-			totalChatAcceptance += model.TotalChatCopies
-		}
-	}
-
-	// Sum chat code copying from Dotcom chat models
-	for _, model := range metrics.CopilotDotcomChat.Models {
-		totalChatAcceptance += model.TotalChatCopies
-	}
-	return float64(totalChatAcceptance)
-}
-
-func GetTotalActiveChatUsers(metrics github.CopilotMetrics) float64 {
-	totalActiveChatUsers := metrics.CopilotIDEChat.TotalEngagedUsers +
-		metrics.CopilotDotcomChat.TotalEngagedUsers
-	return float64(totalActiveChatUsers)
-}
-
-func ComputeLanguageBreakdown(metrics github.CopilotMetrics) map[string]map[string]map[string]float64 {
+// ComputeLanguageBreakdown aggregates metrics by editor and by language.
+// Returns map[editor_or_language]map[language_or_"all"]map[metricKey]value.
+//
+// For IDE breakdown: uses totals_by_ide (editor-level totals).
+// For language breakdown: uses totals_by_language_feature (language×feature totals).
+func ComputeLanguageBreakdown(report *github.UsageReport) map[string]map[string]map[string]float64 {
 	metricsSum := make(map[string]map[string]map[string]float64)
 
-	// Aggregate language data from direct `languages`
-	for _, lang := range metrics.CopilotIDECodeCompletions.Languages {
-		if lang.Name == "" { // Skip empty languages
+	if report == nil {
+		return metricsSum
+	}
+
+	// Aggregate language data from totals_by_language_feature.
+	// The new format provides language×feature, so we aggregate across features per language
+	// and attribute to "all" editors (since IDE-level language breakdown is not available).
+	for _, lf := range report.TotalsByLanguageFeature {
+		if lf.Language == "" {
 			continue
 		}
-		editor := "global" // This represents standalone language usage, outside specific editors
-
+		editor := "all"
 		if _, ok := metricsSum[editor]; !ok {
 			metricsSum[editor] = make(map[string]map[string]float64)
 		}
-		if _, ok := metricsSum[editor][lang.Name]; !ok {
-			metricsSum[editor][lang.Name] = make(map[string]float64)
+		if _, ok := metricsSum[editor][lf.Language]; !ok {
+			metricsSum[editor][lf.Language] = make(map[string]float64)
 		}
-
-		metricsSum[editor][lang.Name]["linesAccepted"] += float64(lang.TotalLinesAccepted)
-		metricsSum[editor][lang.Name]["linesSuggested"] += float64(lang.TotalLinesSuggested)
-		metricsSum[editor][lang.Name]["suggestionsCount"] += float64(lang.TotalSuggestions)
-		metricsSum[editor][lang.Name]["acceptancesCount"] += float64(lang.TotalAcceptances)
-		metricsSum[editor][lang.Name]["activeUsers"] += float64(lang.TotalEngagedUsers)
+		metricsSum[editor][lf.Language]["linesAccepted"] += float64(lf.LocAddedSum)
+		metricsSum[editor][lf.Language]["linesSuggested"] += float64(lf.LocSuggestedToAddSum)
+		metricsSum[editor][lf.Language]["suggestionsCount"] += float64(lf.CodeGenerationActivityCount)
+		metricsSum[editor][lf.Language]["acceptancesCount"] += float64(lf.CodeAcceptanceActivityCount)
 	}
 
-	// Aggregate language data from each editor's models
-	for _, editor := range metrics.CopilotIDECodeCompletions.Editors {
-		for _, model := range editor.Models {
-			for _, lang := range model.Languages {
-				if lang.Name == "" { // Skip empty languages
-					continue
-				}
-				if _, ok := metricsSum[editor.Name]; !ok {
-					metricsSum[editor.Name] = make(map[string]map[string]float64)
-				}
-				if _, ok := metricsSum[editor.Name][lang.Name]; !ok {
-					metricsSum[editor.Name][lang.Name] = make(map[string]float64)
-				}
-
-				metricsSum[editor.Name][lang.Name]["linesAccepted"] += float64(lang.TotalLinesAccepted)
-				metricsSum[editor.Name][lang.Name]["linesSuggested"] += float64(lang.TotalLinesSuggested)
-				metricsSum[editor.Name][lang.Name]["suggestionsCount"] += float64(lang.TotalSuggestions)
-				metricsSum[editor.Name][lang.Name]["acceptancesCount"] += float64(lang.TotalAcceptances)
-				metricsSum[editor.Name][lang.Name]["activeUsers"] += float64(lang.TotalEngagedUsers)
-			}
+	// Aggregate IDE-level data from totals_by_ide.
+	// These don't have per-language breakdown, so we use language "all".
+	for _, ide := range report.TotalsByIDE {
+		if ide.IDE == "" {
+			continue
 		}
+		if _, ok := metricsSum[ide.IDE]; !ok {
+			metricsSum[ide.IDE] = make(map[string]map[string]float64)
+		}
+		if _, ok := metricsSum[ide.IDE]["all"]; !ok {
+			metricsSum[ide.IDE]["all"] = make(map[string]float64)
+		}
+		metricsSum[ide.IDE]["all"]["linesAccepted"] += float64(ide.LocAddedSum)
+		metricsSum[ide.IDE]["all"]["linesSuggested"] += float64(ide.LocSuggestedToAddSum)
+		metricsSum[ide.IDE]["all"]["suggestionsCount"] += float64(ide.CodeGenerationActivityCount)
+		metricsSum[ide.IDE]["all"]["acceptancesCount"] += float64(ide.CodeAcceptanceActivityCount)
 	}
 
 	return metricsSum
