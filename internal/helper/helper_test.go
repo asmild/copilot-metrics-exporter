@@ -1,122 +1,166 @@
 package helper
 
 import (
-	"github.com/asmild/copilot-metrics-exporter/internal/github"
 	"testing"
+
+	"github.com/asmild/copilot-metrics-exporter/internal/github"
 )
 
-func getExampleMetrics() github.CopilotMetrics {
-	return github.CopilotMetrics{
-		TotalActiveUsers: 53,
-		Date:             "2025-06-13",
-		CopilotIDECodeCompletions: github.IDECodeCompletions{
-			Languages: []github.Language{
-				{
-					Name:                "python",
-					TotalSuggestions:    200,
-					TotalAcceptances:    25,
-					TotalLinesSuggested: 500,
-					TotalLinesAccepted:  123,
-				},
-				{
-					Name:                "ruby",
-					TotalSuggestions:    150,
-					TotalAcceptances:    75,
-					TotalLinesSuggested: 167,
-					TotalLinesAccepted:  100,
-				},
+func getExampleReport() *github.UsageReport {
+	return &github.UsageReport{
+		Day:                           "2026-04-08",
+		DailyActiveUsers:              116,
+		MonthlyActiveChatUsers:        72,
+		UserInitiatedInteractionCount: 145,
+		CodeGenerationActivityCount:   2164,
+		CodeAcceptanceActivityCount:   546,
+		LocSuggestedToAddSum:          4170,
+		LocAddedSum:                   1353,
+		TotalsByIDE: []github.IDETotals{
+			{
+				IDE:                         "intellij",
+				CodeGenerationActivityCount: 1210,
+				CodeAcceptanceActivityCount: 275,
+				LocSuggestedToAddSum:        2207,
+				LocAddedSum:                 707,
 			},
-			Editors: []github.Editor{
-				{
-					Name: "vscode",
-					Models: []github.Model{
-						{
-							Name: "default",
-							Languages: []github.Language{
-								{
-									Name:                "python",
-									TotalSuggestions:    100,
-									TotalAcceptances:    25,
-									TotalLinesSuggested: 233,
-									TotalLinesAccepted:  283,
-								},
-								{
-									Name:                "ruby",
-									TotalSuggestions:    50,
-									TotalAcceptances:    25,
-									TotalLinesSuggested: 100,
-									TotalLinesAccepted:  294,
-								},
-							},
-						},
-					},
-				},
+			{
+				IDE:                         "vscode",
+				CodeGenerationActivityCount: 864,
+				CodeAcceptanceActivityCount: 232,
+				LocSuggestedToAddSum:        1347,
+				LocAddedSum:                 516,
+			},
+		},
+		TotalsByLanguageFeature: []github.LanguageFeatureTotals{
+			{
+				Language:                    "java",
+				Feature:                     "code_completion",
+				CodeGenerationActivityCount: 416,
+				CodeAcceptanceActivityCount: 126,
+				LocSuggestedToAddSum:        893,
+				LocAddedSum:                 283,
+			},
+			{
+				Language:                    "python",
+				Feature:                     "code_completion",
+				CodeGenerationActivityCount: 203,
+				CodeAcceptanceActivityCount: 62,
+				LocSuggestedToAddSum:        319,
+				LocAddedSum:                 133,
 			},
 		},
 	}
 }
 
-func TestGetLastDayData(t *testing.T) {
-	usages := []github.CopilotMetrics{
-		{Date: "2025-06-11", TotalActiveUsers: 100},
-		{Date: "2025-06-12", TotalActiveUsers: 200},
-		{Date: "2025-06-13", TotalActiveUsers: 300},
-	}
-
-	lastDayData := GetLastDayData(usages)
-	if lastDayData.Date != "2025-06-13" {
-		t.Errorf("Expected last day to be 2025-06-13, but got %s", lastDayData.Date)
-	}
-}
-
 func TestGetTotalSuggestionsCount(t *testing.T) {
-	exampleMetrics := getExampleMetrics()
-	count := GetTotalSuggestionsCount(exampleMetrics)
-	if count != 500 {
-		t.Errorf("Expected total suggestions count to be 500, but got %f", count)
+	report := getExampleReport()
+	count := GetTotalSuggestionsCount(report)
+	if count != 2164 {
+		t.Errorf("Expected 2164, got %f", count)
 	}
 }
 
 func TestGetTotalAcceptancesCount(t *testing.T) {
-	exampleMetrics := getExampleMetrics()
-	count := GetTotalAcceptancesCount(exampleMetrics)
-	if count != 150 {
-		t.Errorf("Expected total acceptances count to be 150, but got %f", count)
+	report := getExampleReport()
+	count := GetTotalAcceptancesCount(report)
+	if count != 546 {
+		t.Errorf("Expected 546, got %f", count)
 	}
 }
 
 func TestGetTotalLinesSuggested(t *testing.T) {
-	exampleMetrics := getExampleMetrics()
-	count := GetTotalLinesSuggested(exampleMetrics)
-	if count != 1000 {
-		t.Errorf("Expected total lines suggested to be 1000, but got %f", count)
+	report := getExampleReport()
+	count := GetTotalLinesSuggested(report)
+	if count != 4170 {
+		t.Errorf("Expected 4170, got %f", count)
 	}
 }
 
 func TestGetTotalLinesAccepted(t *testing.T) {
-	exampleMetrics := getExampleMetrics()
-	count := GetTotalLinesAccepted(exampleMetrics)
-	if count != 800 {
-		t.Errorf("Expected total lines accepted to be 800, but got %f", count)
+	report := getExampleReport()
+	count := GetTotalLinesAccepted(report)
+	if count != 1353 {
+		t.Errorf("Expected 1353, got %f", count)
 	}
 }
 
 func TestGetTotalActiveUsers(t *testing.T) {
-	exampleMetrics := getExampleMetrics()
-	count := GetTotalActiveUsers(exampleMetrics)
-	if count != 53 {
-		t.Errorf("Expected total active users to be 50, but got %f", count)
+	report := getExampleReport()
+	count := GetTotalActiveUsers(report)
+	if count != 116 {
+		t.Errorf("Expected 116, got %f", count)
 	}
 }
 
-func TestGetLastDayDataWithInvalidDate(t *testing.T) {
-	usages := []github.CopilotMetrics{
-		{Date: "2025-01-01", TotalActiveUsers: 100},
-		{Date: "invalid-date", TotalActiveUsers: 200},
+func TestGetTotalChats(t *testing.T) {
+	report := getExampleReport()
+	count := GetTotalChats(report)
+	if count != 145 {
+		t.Errorf("Expected 145, got %f", count)
+	}
+}
+
+func TestGetTotalActiveChatUsers(t *testing.T) {
+	report := getExampleReport()
+	count := GetTotalActiveChatUsers(report)
+	if count != 72 {
+		t.Errorf("Expected 72, got %f", count)
+	}
+}
+
+func TestNilReportSafety(t *testing.T) {
+	if GetTotalSuggestionsCount(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	if GetTotalAcceptancesCount(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	if GetTotalLinesSuggested(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	if GetTotalLinesAccepted(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	if GetTotalActiveUsers(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	if GetTotalChats(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+if GetTotalActiveChatUsers(nil) != 0 {
+		t.Error("Expected 0 for nil")
+	}
+	breakdown := ComputeLanguageBreakdown(nil)
+	if len(breakdown) != 0 {
+		t.Error("Expected empty breakdown for nil")
+	}
+}
+
+func TestComputeLanguageBreakdown(t *testing.T) {
+	report := getExampleReport()
+	breakdown := ComputeLanguageBreakdown(report)
+
+	// Should have IDE entries
+	intellij, ok := breakdown["intellij"]
+	if !ok {
+		t.Fatal("Expected 'intellij' in breakdown")
+	}
+	allLang := intellij["all"]
+	if allLang["suggestionsCount"] != 1210 {
+		t.Errorf("Expected 1210 suggestions for intellij, got %f", allLang["suggestionsCount"])
 	}
 
-	lastDayData := GetLastDayData(usages)
-	if lastDayData.Date != "2025-01-01" {
-		t.Errorf("Expected last day to be 2025-01-01, but got %s", lastDayData.Date)
+	// Should have language entries under "all" editor
+	allEditor, ok := breakdown["all"]
+	if !ok {
+		t.Fatal("Expected 'all' editor in breakdown")
+	}
+	java := allEditor["java"]
+	if java["suggestionsCount"] != 416 {
+		t.Errorf("Expected 416 suggestions for java, got %f", java["suggestionsCount"])
+	}
+	if java["linesAccepted"] != 283 {
+		t.Errorf("Expected 283 lines accepted for java, got %f", java["linesAccepted"])
 	}
 }

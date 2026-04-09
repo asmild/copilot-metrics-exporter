@@ -1,9 +1,9 @@
 package prometheusexporter
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/asmild/copilot-metrics-exporter/internal/auth"
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
@@ -20,15 +20,17 @@ type CopilotMetricsCollector struct {
 	totalLinesAccepted    *prometheus.Desc
 	totalActiveUsers      *prometheus.Desc
 	totalChats            *prometheus.Desc
-	totalChatInsertions   *prometheus.Desc
-	totalChatCopies       *prometheus.Desc
 	totalActiveChatUsers  *prometheus.Desc
-	totalSeatsOccupied    *prometheus.Desc
-	linesAcceptedDesc     *prometheus.Desc
+	totalSeatsOccupied        *prometheus.Desc
+	weeklyActiveUsers         *prometheus.Desc
+	monthlyActiveUsers        *prometheus.Desc
+	featureSuggestionsCount   *prometheus.Desc
+	featureAcceptancesCount   *prometheus.Desc
+	featureInteractionsCount  *prometheus.Desc
+	linesAcceptedDesc         *prometheus.Desc
 	linesSuggestedDesc    *prometheus.Desc
 	suggestionsCountDesc  *prometheus.Desc
 	acceptancesCountDesc  *prometheus.Desc
-	activeUsers           *prometheus.Desc
 	githubClient          *github.Client
 }
 
@@ -62,17 +64,29 @@ func NewCopilotMetricsCollector(githubClient *github.Client) *CopilotMetricsColl
 			"The total number of chats initiated by users last day.",
 			nil, nil,
 		),
-		totalChatInsertions: prometheus.NewDesc("github_copilot_total_chat_insertions",
-			"Total number of chat acceptances made by GitHub Copilot last day.",
-			nil, nil,
-		),
-		totalChatCopies: prometheus.NewDesc("github_copilot_total_chat_copies",
-			"The number of times users copied a code suggestion from Copilot Chat using the keyboard, or the 'Copy' UI element last day.",
-			nil, nil,
-		),
 		totalActiveChatUsers: prometheus.NewDesc("github_copilot_total_active_chat_users",
 			"Total number of active chat users utilizing GitHub Copilot last day.",
 			nil, nil,
+		),
+		weeklyActiveUsers: prometheus.NewDesc("github_copilot_weekly_active_users",
+			"Number of active Copilot users in the last 7 days.",
+			nil, nil,
+		),
+		monthlyActiveUsers: prometheus.NewDesc("github_copilot_monthly_active_users",
+			"Number of active Copilot users in the last 30 days.",
+			nil, nil,
+		),
+		featureSuggestionsCount: prometheus.NewDesc("github_copilot_feature_suggestions_count",
+			"Code generation activity count by Copilot feature.",
+			[]string{"feature"}, nil,
+		),
+		featureAcceptancesCount: prometheus.NewDesc("github_copilot_feature_acceptances_count",
+			"Code acceptance activity count by Copilot feature.",
+			[]string{"feature"}, nil,
+		),
+		featureInteractionsCount: prometheus.NewDesc("github_copilot_feature_interactions_count",
+			"User-initiated interaction count by Copilot feature.",
+			[]string{"feature"}, nil,
 		),
 		linesAcceptedDesc: prometheus.NewDesc("github_copilot_lines_accepted_breakdown",
 			"Lines accepted breakdown for GitHub Copilot by language and editor.",
@@ -100,12 +114,6 @@ func NewCopilotMetricsCollector(githubClient *github.Client) *CopilotMetricsColl
 			nil,
 		),
 
-		activeUsers: prometheus.NewDesc(
-			"github_copilot_active_users_breakdown",
-			"Active users breakdown for GitHub Copilot by language and editor.",
-			[]string{"language", "editor"},
-			nil,
-		),
 		githubClient: githubClient,
 	}
 }
@@ -116,47 +124,51 @@ func (collector *CopilotMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.totalLinesSuggested
 	ch <- collector.totalLinesAccepted
 	ch <- collector.totalActiveUsers
-	ch <- collector.totalChatInsertions
-	ch <- collector.totalChatCopies
 	ch <- collector.totalActiveChatUsers
 	ch <- collector.totalSeatsOccupied
+	ch <- collector.weeklyActiveUsers
+	ch <- collector.monthlyActiveUsers
+	ch <- collector.featureSuggestionsCount
+	ch <- collector.featureAcceptancesCount
+	ch <- collector.featureInteractionsCount
 	ch <- collector.linesAcceptedDesc
 	ch <- collector.linesSuggestedDesc
 	ch <- collector.suggestionsCountDesc
 	ch <- collector.acceptancesCountDesc
-	ch <- collector.activeUsers
 }
 
 func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
-	// GitHub API calculates metrics based on UTC days, so we must use UTC timezone
-	// to avoid requesting data for days that haven't been calculated yet
-	since := time.Now().UTC().AddDate(0, 0, -28).Format("2006-01-02T15:04:05Z")
-	copilotUsage, err := collector.githubClient.GetCopilotMetrics(&since)
+	ctx := context.Background()
 
+	report, err := collector.githubClient.GetMetrics(ctx)
 	if err != nil {
 		fmt.Printf("Failed to get Copilot usage: %v\n", err)
 		return
 	}
 
-	billing, err := collector.githubClient.GetBillingSeats()
-	if err != nil {
-		fmt.Printf("Failed to get Copilot billing: %v\n", err)
-		return
+	ch <- prometheus.MustNewConstMetric(collector.totalSuggestionsCount, prometheus.GaugeValue, helper.GetTotalSuggestionsCount(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalAcceptancesCount, prometheus.GaugeValue, helper.GetTotalAcceptancesCount(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, helper.GetTotalLinesSuggested(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, helper.GetTotalLinesAccepted(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, helper.GetTotalActiveUsers(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalChats, prometheus.GaugeValue, helper.GetTotalChats(report))
+	ch <- prometheus.MustNewConstMetric(collector.totalActiveChatUsers, prometheus.GaugeValue, helper.GetTotalActiveChatUsers(report))
+	ch <- prometheus.MustNewConstMetric(collector.weeklyActiveUsers, prometheus.GaugeValue, float64(report.WeeklyActiveUsers))
+	ch <- prometheus.MustNewConstMetric(collector.monthlyActiveUsers, prometheus.GaugeValue, float64(report.MonthlyActiveUsers))
+
+	for _, f := range report.TotalsByFeature {
+		ch <- prometheus.MustNewConstMetric(collector.featureSuggestionsCount, prometheus.GaugeValue, float64(f.CodeGenerationActivityCount), f.Feature)
+		ch <- prometheus.MustNewConstMetric(collector.featureAcceptancesCount, prometheus.GaugeValue, float64(f.CodeAcceptanceActivityCount), f.Feature)
+		ch <- prometheus.MustNewConstMetric(collector.featureInteractionsCount, prometheus.GaugeValue, float64(f.UserInitiatedInteractionCount), f.Feature)
 	}
 
-	lastDayCopilotUsage := helper.GetLastDayData(copilotUsage)
-	ch <- prometheus.MustNewConstMetric(collector.totalSuggestionsCount, prometheus.GaugeValue, helper.GetTotalSuggestionsCount(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalAcceptancesCount, prometheus.GaugeValue, helper.GetTotalAcceptancesCount(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalLinesSuggested, prometheus.GaugeValue, helper.GetTotalLinesSuggested(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalLinesAccepted, prometheus.GaugeValue, helper.GetTotalLinesAccepted(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalActiveUsers, prometheus.GaugeValue, helper.GetTotalActiveUsers(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalChatInsertions, prometheus.GaugeValue, helper.GetTotalChatInsertions(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalChats, prometheus.GaugeValue, helper.GetTotalChats(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalChatCopies, prometheus.GaugeValue, helper.GetTotalChatCopies(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalActiveChatUsers, prometheus.GaugeValue, helper.GetTotalActiveChatUsers(lastDayCopilotUsage))
-	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(billing.TotalSeats))
+	totalSeats, err := collector.githubClient.GetTotalSeats(ctx)
+	if err != nil {
+		fmt.Printf("Warning: Copilot seats unavailable: %v\n", err)
+	}
+	ch <- prometheus.MustNewConstMetric(collector.totalSeatsOccupied, prometheus.GaugeValue, float64(totalSeats))
 
-	metricsSum := helper.ComputeLanguageBreakdown(lastDayCopilotUsage)
+	metricsSum := helper.ComputeLanguageBreakdown(report)
 	for editor, languages := range metricsSum {
 		for language, metrics := range languages {
 
@@ -164,7 +176,6 @@ func (collector *CopilotMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(collector.linesSuggestedDesc, prometheus.GaugeValue, metrics["linesSuggested"], language, editor)
 			ch <- prometheus.MustNewConstMetric(collector.suggestionsCountDesc, prometheus.GaugeValue, metrics["suggestionsCount"], language, editor)
 			ch <- prometheus.MustNewConstMetric(collector.acceptancesCountDesc, prometheus.GaugeValue, metrics["acceptancesCount"], language, editor)
-			ch <- prometheus.MustNewConstMetric(collector.activeUsers, prometheus.GaugeValue, metrics["activeUsers"], language, editor)
 		}
 	}
 }
