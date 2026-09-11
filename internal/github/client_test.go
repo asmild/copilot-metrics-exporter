@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/asmild/copilot-metrics-exporter/internal/config"
 	gogithub "github.com/google/go-github/v84/github"
@@ -97,6 +98,41 @@ func TestGetMetrics(t *testing.T) {
 	assert.Equal(t, 116, report.DailyActiveUsers)
 	assert.Equal(t, 2164, report.CodeGenerationActivityCount)
 	assert.Equal(t, 1353, report.LocAddedSum)
+}
+
+func TestGetMetricsFallsBackWhenDailyReportIsUnavailable(t *testing.T) {
+	dayBefore := time.Now().UTC().AddDate(0, 0, -2).Format("2006-01-02")
+	reportData := UsageReport{Day: dayBefore}
+	reportServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(reportData)
+	}))
+	defer reportServer.Close()
+
+	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("day") != dayBefore {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		json.NewEncoder(w).Encode(gogithub.CopilotDailyMetricsReport{
+			DownloadLinks: []string{reportServer.URL + "/report.json"},
+			ReportDay:     dayBefore,
+		})
+	}))
+	defer apiServer.Close()
+
+	conf := config.Config{
+		PersonalAccessToken: testToken,
+		Organization:        testOrg,
+		IsEnterprise:        false,
+	}
+	client, err := NewClient(&conf)
+	require.NoError(t, err)
+	client.gh, err = client.gh.WithEnterpriseURLs(apiServer.URL+"/", apiServer.URL+"/")
+	require.NoError(t, err)
+
+	report, err := client.GetMetrics(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, dayBefore, report.Day)
 }
 
 func TestGetTotalSeats(t *testing.T) {

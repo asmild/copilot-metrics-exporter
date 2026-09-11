@@ -127,12 +127,18 @@ func (c *Client) fetchDailyReport(ctx context.Context, day string) ([]string, er
 		if err != nil {
 			return nil, err
 		}
+		if report == nil || len(report.DownloadLinks) == 0 {
+			return nil, fmt.Errorf("no report available for %s", day)
+		}
 		return report.DownloadLinks, nil
 	}
 
 	report, _, err := c.gh.Copilot.GetOrganizationDailyMetricsReport(ctx, c.org, opts)
 	if err != nil {
 		return nil, err
+	}
+	if report == nil || len(report.DownloadLinks) == 0 {
+		return nil, fmt.Errorf("no report available for %s", day)
 	}
 	return report.DownloadLinks, nil
 }
